@@ -1,0 +1,116 @@
+[
+  {
+    "id": "gs_mod_1",
+    "title": "Digital Boundaries",
+    "description": "Learn how to handle unknown friend requests, online blackmail, and protect your digital privacy.",
+    "category": "Girls Safety",
+    "difficulty": "Medium",
+    "estimatedMinutes": 15,
+    "ageRange": "12-16",
+    "order": 11,
+    "xpReward": 300,
+    "coinReward": 60,
+    "coverImageUrl": "https://images.unsplash.com/photo-1614064641913-6b70b5faeb69?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "gs1_s1",
+        "type": "story",
+        "text": "You are scrolling through Instagram and receive a friend request from 'Rahul123'. His profile picture is of a cute dog, but you don't recognize the name. You have 0 mutual friends.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "gs1_c1"
+      },
+      {
+        "id": "gs1_c1",
+        "type": "choice",
+        "text": "What is the safest action to take?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Accept it. It's just a friend request, what's the harm?",
+            "isCorrect": false,
+            "feedbackText": "Accepting unknown requests gives strangers access to your photos, location data (from posts), and friends list. This is how online grooming and stalking often begins.",
+            "nextSceneId": "gs1_s2"
+          },
+          {
+            "text": "Message them first to ask 'Who are you?' before accepting.",
+            "isCorrect": false,
+            "feedbackText": "By messaging them, you are opening a channel of communication. Predators often use this to start manipulating you. It's best not to engage.",
+            "nextSceneId": "gs1_s2"
+          },
+          {
+            "text": "Decline the request and block the account.",
+            "isCorrect": true,
+            "feedbackText": "Perfect! Never accept requests from people you don't know in real life. Your digital space is your private space.",
+            "nextSceneId": "gs1_s2"
+          }
+        ]
+      },
+      {
+        "id": "gs1_s2",
+        "type": "story",
+        "text": "A week later, a classmate named Sameer messages you. He says he has an embarrassing photo of you from the school trip and threatens to send it to the whole school unless you send him a picture of yourself.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "gs1_c2"
+      },
+      {
+        "id": "gs1_c2",
+        "type": "time_challenge",
+        "timeLimit": 20,
+        "text": "This is cyber extortion (blackmail). You are panicking. What is your immediate next step? YOU HAVE 20 SECONDS!",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Send the picture so he deletes the embarrassing one.",
+            "isCorrect": false,
+            "feedbackText": "NEVER give in to blackmail. If you send a picture, he will just have TWO things to blackmail you with. The cycle will never stop.",
+            "nextSceneId": "gs1_s3"
+          },
+          {
+            "text": "Delete his message and block him so he can't contact you.",
+            "isCorrect": false,
+            "feedbackText": "Blocking him is good, but deleting the message destroys the EVIDENCE. You need the evidence to report him.",
+            "nextSceneId": "gs1_s3"
+          },
+          {
+            "text": "Take a screenshot of the threat, do not reply, and tell a trusted adult immediately.",
+            "isCorrect": true,
+            "feedbackText": "Exactly! 1. Gather evidence (screenshot). 2. Do not negotiate. 3. Report it. In India, cyber extortion is a serious crime under the IT Act.",
+            "nextSceneId": "gs1_s3"
+          }
+        ]
+      },
+      {
+        "id": "gs1_s3",
+        "type": "story",
+        "text": "You took screenshots and told your parents. They helped you report Sameer to the school principal and the Cyber Crime portal (cybercrime.gov.in).",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "gs1_c3"
+      },
+      {
+        "id": "gs1_c3",
+        "type": "spot_danger",
+        "text": "To prevent this in the future, you check your social media settings. Tap on the setting you should change immediately.",
+        "mediaUrl": "https://images.unsplash.com/photo-1614064642223-1b3240228711?auto=format&fit=crop&q=80&w=800",
+        "dangerZones": [
+          { "id": "dz1", "x": 50, "y": 30, "radius": 20, "description": "Account Privacy: Public" }
+        ],
+        "choices": [
+          { "text": "Correct Spot", "isCorrect": true, "feedbackText": "Yes! You should change your Account Privacy from 'Public' to 'Private'.", "nextSceneId": "gs1_end" },
+          { "text": "Wrong Spot", "isCorrect": false, "feedbackText": "You need to locate the 'Account Privacy' toggle and switch it to Private.", "nextSceneId": "gs1_end" }
+        ]
+      },
+      {
+        "id": "gs1_end",
+        "type": "story",
+        "text": "By making your account private and knowing how to handle threats, you have secured your digital boundaries. Remember, you have the right to feel safe online just as much as in the real world.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

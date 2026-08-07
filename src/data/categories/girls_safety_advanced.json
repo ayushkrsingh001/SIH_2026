@@ -1,0 +1,63 @@
+[
+  {
+    "id": "gs_adv_mod_1",
+    "title": "Hidden Cameras & Harassment",
+    "description": "Learn how to identify hidden cameras in public spaces and how to handle and report public harassment.",
+    "category": "Girls Safety",
+    "difficulty": "Hard",
+    "estimatedMinutes": 15,
+    "ageRange": "12-16",
+    "order": 2,
+    "xpReward": 400,
+    "coinReward": 75,
+    "coverImageUrl": "https://images.unsplash.com/photo-1555626906-fcf10d6851b4?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": "gs_mod_1",
+    "scenes": [
+      {
+        "id": "gsa1_s1",
+        "type": "story",
+        "text": "You are at a shopping mall and go to use the public changing room to try on clothes. You've heard stories about hidden cameras in fitting rooms.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "gsa1_c1"
+      },
+      {
+        "id": "gsa1_c1",
+        "type": "choice",
+        "text": "How can you check if the mirror in the room is a two-way mirror?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Place your fingernail against the glass. If there is a gap between your nail and the reflection, it's a genuine mirror.", "isCorrect": true, "feedbackText": "Correct! If there is a gap, it's a normal mirror. If your fingernail directly touches its reflection with no gap, it might be a two-way mirror.", "nextSceneId": "gsa1_s2" },
+          { "text": "Knock on it to see if it breaks easily.", "isCorrect": false, "feedbackText": "Knocking won't reliably tell you, and breaking the glass is dangerous. Use the fingernail test instead.", "nextSceneId": "gsa1_s2" }
+        ]
+      },
+      {
+        "id": "gsa1_s2",
+        "type": "story",
+        "text": "The mirror is normal. However, you leave the mall and a group of guys starts passing inappropriate comments (catcalling) as you walk by.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "gsa1_c2"
+      },
+      {
+        "id": "gsa1_c2",
+        "type": "time_challenge",
+        "timeLimit": 15,
+        "text": "You feel unsafe. What is the Women Helpline number in India you can call?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Call 1091", "isCorrect": true, "feedbackText": "Correct! 1091 is the Women Helpline in India. It is toll-free and available 24/7.", "nextSceneId": "gsa1_end" },
+          { "text": "Call 1098", "isCorrect": false, "feedbackText": "1098 is Childline. For adult women's distress and anti-harassment, 1091 is the dedicated Women Helpline.", "nextSceneId": "gsa1_end" }
+        ]
+      },
+      {
+        "id": "gsa1_end",
+        "type": "story",
+        "text": "You confidently walk into a nearby crowded store, ignoring the harassers, and call a family member. Harassment is never your fault, and you have the right to occupy public spaces safely.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

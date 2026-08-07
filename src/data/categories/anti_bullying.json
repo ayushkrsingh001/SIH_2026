@@ -1,0 +1,81 @@
+[
+  {
+    "id": "cb_mod_1",
+    "title": "Anti-Bullying & Cyber Safety",
+    "description": "Learn how to stand up against bullies, both in the schoolyard and online, and protect your mental health.",
+    "category": "Anti-Bullying",
+    "difficulty": "Easy",
+    "estimatedMinutes": 10,
+    "ageRange": "8-14",
+    "order": 3,
+    "xpReward": 200,
+    "coinReward": 40,
+    "coverImageUrl": "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "cb1_s1",
+        "type": "story",
+        "text": "You see a group of students laughing at a younger student in the hallway. They are knocking his books out of his hands. You are watching from a distance.",
+        "mediaUrl": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80&w=800",
+        "choices": [],
+        "nextSceneId": "cb1_c1"
+      },
+      {
+        "id": "cb1_c1",
+        "type": "choice",
+        "text": "What is the role of a 'Bystander'?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Someone who watches the bullying happen but does nothing.",
+            "isCorrect": true,
+            "feedbackText": "Correct. But we want you to be an 'Upstander'—someone who safely intervenes or gets help!",
+            "nextSceneId": "cb1_c2"
+          },
+          {
+            "text": "Someone who joins in and helps the bullies.",
+            "isCorrect": false,
+            "feedbackText": "That would make them a bully too! A bystander is someone who just watches without acting.",
+            "nextSceneId": "cb1_c2"
+          }
+        ]
+      },
+      {
+        "id": "cb1_c2",
+        "type": "time_challenge",
+        "timeLimit": 15,
+        "text": "You want to be an Upstander. The bullies are much older than you. What is the SAFEST way to help within 15 seconds?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Run up and start fighting the older students.",
+            "isCorrect": false,
+            "feedbackText": "Never put yourself in physical danger! That will just make things worse.",
+            "nextSceneId": "cb1_s3"
+          },
+          {
+            "text": "Quietly record a video on your phone.",
+            "isCorrect": false,
+            "feedbackText": "Recording videos can sometimes violate privacy or get you in trouble. It's better to act directly by getting help.",
+            "nextSceneId": "cb1_s3"
+          },
+          {
+            "text": "Run to the nearest teacher's lounge and get an adult.",
+            "isCorrect": true,
+            "feedbackText": "Exactly! Getting a trusted adult is the most effective and safest way to stop physical bullying.",
+            "nextSceneId": "cb1_s3"
+          }
+        ]
+      },
+      {
+        "id": "cb1_s3",
+        "type": "story",
+        "text": "You get a teacher who immediately stops the bullies. The younger student thanks you later. You learn that speaking up is the strongest shield against bullying.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

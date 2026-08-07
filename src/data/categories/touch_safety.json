@@ -1,0 +1,73 @@
+[
+  {
+    "id": "ts_mod_1",
+    "title": "My Body, My Rules",
+    "description": "Learn the difference between a good touch and a bad touch, and how to set bodily boundaries with both strangers and people you know.",
+    "category": "Good Touch / Bad Touch",
+    "difficulty": "Easy",
+    "estimatedMinutes": 10,
+    "ageRange": "8-11",
+    "order": 1,
+    "xpReward": 250,
+    "coinReward": 50,
+    "coverImageUrl": "https://images.unsplash.com/photo-1594879579083-d9d300a4392a?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "ts1_s1",
+        "type": "story",
+        "text": "Your body belongs to YOU. No one is allowed to touch you in a way that makes you feel uncomfortable, confused, or scared.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "ts1_c1"
+      },
+      {
+        "id": "ts1_c1",
+        "type": "drag_drop",
+        "text": "Let's categorize these touches. Drag the touches to the correct box.",
+        "mediaUrl": null,
+        "dragItems": [
+          { "id": "di1", "text": "A high-five from a friend", "targetId": "dt_good" },
+          { "id": "di2", "text": "A stranger asking to sit on their lap", "targetId": "dt_bad" },
+          { "id": "di3", "text": "A doctor checking you, with your parents in the room", "targetId": "dt_good" },
+          { "id": "di4", "text": "Someone telling you to keep a 'special secret' about touching", "targetId": "dt_bad" }
+        ],
+        "dragTargets": [
+          { "id": "dt_good", "label": "Good & Safe Touch" },
+          { "id": "dt_bad", "label": "Bad & Unsafe Touch" }
+        ],
+        "choices": [
+          { "text": "Correct", "isCorrect": true, "feedbackText": "Great job! A bad touch is anything that makes you uncomfortable, touches private parts, or involves keeping a secret. A safe touch leaves you feeling happy and respected.", "nextSceneId": "ts1_s2" },
+          { "text": "Incorrect", "isCorrect": false, "feedbackText": "Try again! Remember, keeping a 'secret' about touching is a huge warning sign.", "nextSceneId": "ts1_s2" }
+        ]
+      },
+      {
+        "id": "ts1_s2",
+        "type": "story",
+        "text": "You are at a family gathering. A distant uncle wants to give you a big hug and kiss on the cheek, but you don't feel comfortable.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "ts1_c2"
+      },
+      {
+        "id": "ts1_c2",
+        "type": "time_challenge",
+        "timeLimit": 15,
+        "text": "What should you do? You only have 15 seconds to decide!",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Let him hug you anyway because he is family.", "isCorrect": false, "feedbackText": "You never have to hug anyone if you don't want to, even family! Your body, your rules.", "nextSceneId": "ts1_s3" },
+          { "text": "Say 'No thank you, I'd rather do a high-five.'", "isCorrect": true, "feedbackText": "Perfect! You have the right to say NO and offer a different greeting, like a high-five or a wave.", "nextSceneId": "ts1_s3" }
+        ]
+      },
+      {
+        "id": "ts1_s3",
+        "type": "story",
+        "text": "You confidently offer a high-five instead. Your parents smile because they taught you to set safe boundaries. Remember the 3 steps: NO, GO, and TELL a trusted adult!",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

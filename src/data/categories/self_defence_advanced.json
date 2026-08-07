@@ -1,0 +1,57 @@
+[
+  {
+    "id": "sd_adv_mod_1",
+    "title": "Transit & Escape Tactics",
+    "description": "Advanced situational awareness for public transport and recognizing when an environment is becoming unsafe.",
+    "category": "Self Defence",
+    "difficulty": "Hard",
+    "estimatedMinutes": 15,
+    "ageRange": "12-16",
+    "order": 2,
+    "xpReward": 400,
+    "coinReward": 75,
+    "coverImageUrl": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": "sd_mod_1",
+    "scenes": [
+      {
+        "id": "sda1_s1",
+        "type": "story",
+        "text": "You are taking the bus home late in the evening. The bus is mostly empty. A man boards the bus and, despite many empty seats, sits right next to you. He starts asking you personal questions about where you live.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "sda1_c1"
+      },
+      {
+        "id": "sda1_c1",
+        "type": "choice",
+        "text": "How should you respond to this invasion of space?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Answer his questions to be polite, but look away.", "isCorrect": false, "feedbackText": "You do not owe strangers politeness if they make you uncomfortable. Giving out personal information is dangerous.", "nextSceneId": "sda1_s2" },
+          { "text": "Stand up, say nothing, and move to a seat near the bus conductor or driver.", "isCorrect": true, "feedbackText": "Excellent! You removed yourself from the uncomfortable situation and moved to a 'safe zone' near authority figures (the driver).", "nextSceneId": "sda1_s2" }
+        ]
+      },
+      {
+        "id": "sda1_s2",
+        "type": "spot_danger",
+        "text": "You stand up to move. Tap on the safest place to sit on this bus.",
+        "mediaUrl": "https://images.unsplash.com/photo-1570125909232-eb263c85f48c?auto=format&fit=crop&q=80&w=800",
+        "dangerZones": [
+          { "id": "dz1", "x": 10, "y": 80, "radius": 20, "description": "Front seat near the driver" }
+        ],
+        "choices": [
+          { "text": "Correct Spot", "isCorrect": true, "feedbackText": "Yes! Sitting near the driver or conductor means you are visible and they can assist you if needed.", "nextSceneId": "sda1_end" },
+          { "text": "Wrong Spot", "isCorrect": false, "feedbackText": "The safest place is at the front of the bus, near the driver or conductor.", "nextSceneId": "sda1_end" }
+        ]
+      },
+      {
+        "id": "sda1_end",
+        "type": "story",
+        "text": "You sit near the driver. The man gets off at the next stop. You successfully used situational awareness and preventative action to stay safe!",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

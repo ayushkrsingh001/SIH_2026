@@ -1,0 +1,110 @@
+[
+  {
+    "id": "sd_mod_1",
+    "title": "Awareness & Escape",
+    "description": "Learn how to spot danger early and the best ways to escape an uncomfortable situation without violence.",
+    "category": "Self Defence",
+    "difficulty": "Easy",
+    "estimatedMinutes": 10,
+    "ageRange": "12-16",
+    "order": 10,
+    "xpReward": 250,
+    "coinReward": 50,
+    "coverImageUrl": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "sd1_s1",
+        "type": "story",
+        "text": "You are walking home from school. The usual path is through a park, but today it is getting dark and there are very few people around. You notice someone walking about 20 steps behind you. They seem to be matching your pace.",
+        "mediaUrl": "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&q=80&w=800",
+        "choices": [],
+        "nextSceneId": "sd1_c1"
+      },
+      {
+        "id": "sd1_c1",
+        "type": "choice",
+        "text": "What should you do right now?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Stop, turn around, and confront them aggressively.",
+            "isCorrect": false,
+            "feedbackText": "Confronting a stranger in an isolated area is very dangerous. You don't know their intentions or if they are armed. Prevention is always the first rule of self-defence.",
+            "nextSceneId": "sd1_s2_bad"
+          },
+          {
+            "text": "Cross the street to see if they follow you.",
+            "isCorrect": true,
+            "feedbackText": "Excellent! Crossing the street is a classic 'situational awareness' check. If they cross too, you know they might be following you. If they don't, it was probably just a coincidence.",
+            "nextSceneId": "sd1_s2_good"
+          },
+          {
+            "text": "Start running as fast as you can.",
+            "isCorrect": false,
+            "feedbackText": "While running is an option later, running immediately might trigger a chase response, and you might trip or get tired before reaching a safe place.",
+            "nextSceneId": "sd1_s2_good"
+          }
+        ]
+      },
+      {
+        "id": "sd1_s2_good",
+        "type": "story",
+        "text": "You cross the street calmly. A few seconds later, the person also crosses the street and continues walking behind you. Your heart starts beating faster. It's time to take action.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "sd1_c2"
+      },
+      {
+        "id": "sd1_s2_bad",
+        "type": "story",
+        "text": "You turn around, but they just look confused and walk past you. However, you are now feeling very anxious and realize you need to learn how to handle these situations better.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "sd1_c2"
+      },
+      {
+        "id": "sd1_c2",
+        "type": "time_challenge",
+        "timeLimit": 15,
+        "text": "You need to make a quick decision. You are 5 minutes away from home, but there is a busy cafe right across the street. QUICK!",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Keep walking home, but walk faster.",
+            "isCorrect": false,
+            "feedbackText": "Walking home means you are leading a potential threat exactly to where you live! Never go home if you think you are being followed.",
+            "nextSceneId": "sd1_s3"
+          },
+          {
+            "text": "Go into the busy cafe and stay there.",
+            "isCorrect": true,
+            "feedbackText": "Perfect! Always go to a populated, well-lit public space. A cafe has staff and other customers. You are safe in a crowd.",
+            "nextSceneId": "sd1_s3"
+          }
+        ]
+      },
+      {
+        "id": "sd1_s3",
+        "type": "spot_danger",
+        "text": "You decide to head towards the cafe. Look at the street ahead. Tap the safest place to walk.",
+        "mediaUrl": "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&q=80&w=800",
+        "dangerZones": [
+          { "id": "dz1", "x": 80, "y": 60, "radius": 15, "description": "Well-lit Cafe Entrance" }
+        ],
+        "choices": [
+          { "text": "Correct Spot", "isCorrect": true, "feedbackText": "Yes! The well-lit cafe entrance is your safe zone.", "nextSceneId": "sd1_end" },
+          { "text": "Wrong Spot", "isCorrect": false, "feedbackText": "You should aim for the bright, populated area (the cafe) rather than the dark alley or empty street.", "nextSceneId": "sd1_end" }
+        ]
+      },
+      {
+        "id": "sd1_end",
+        "type": "story",
+        "text": "You safely enter the cafe. You buy a small drink, sit near the counter, and call a family member to come pick you up. You handled the situation perfectly by prioritizing situational awareness and public safety over confrontation.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

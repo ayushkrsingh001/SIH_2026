@@ -1,0 +1,65 @@
+[
+  {
+    "id": "cs_mod_1",
+    "title": "Internet Scams & Fake News",
+    "description": "Learn how to identify fake messages, phishing scams, and how to verify information before sharing it.",
+    "category": "Cyber Safety",
+    "difficulty": "Medium",
+    "estimatedMinutes": 12,
+    "ageRange": "12-16",
+    "order": 1,
+    "xpReward": 300,
+    "coinReward": 60,
+    "coverImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "cs1_s1",
+        "type": "story",
+        "text": "You receive a WhatsApp message from an unknown number: 'Congratulations! You have won an iPhone 15! Click this link to claim your prize before it expires!'",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "cs1_c1"
+      },
+      {
+        "id": "cs1_c1",
+        "type": "time_challenge",
+        "timeLimit": 15,
+        "text": "The message says the link will expire in 10 minutes. What should you do?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Click it quickly! I want a new phone.", "isCorrect": false, "feedbackText": "Wait! This is a classic 'Phishing Scam'. Scammers create a false sense of urgency to make you act without thinking. Never click links from unknown numbers.", "nextSceneId": "cs1_s2" },
+          { "text": "Ignore it, block the number, and do not click the link.", "isCorrect": true, "feedbackText": "Excellent! If something sounds too good to be true, it probably is. This is a phishing scam meant to steal your personal data.", "nextSceneId": "cs1_s2" }
+        ]
+      },
+      {
+        "id": "cs1_s2",
+        "type": "drag_drop",
+        "text": "Let's sort out how to handle different types of online information. Drag them to the correct action.",
+        "mediaUrl": null,
+        "dragItems": [
+          { "id": "di1", "text": "A forward message claiming an apocalypse is coming tomorrow", "targetId": "dt_verify" },
+          { "id": "di2", "text": "An email asking for your password to 'secure your account'", "targetId": "dt_block" },
+          { "id": "di3", "text": "A friend's post about their birthday party", "targetId": "dt_safe" }
+        ],
+        "dragTargets": [
+          { "id": "dt_verify", "label": "Verify (Fact Check)" },
+          { "id": "dt_block", "label": "Block & Report" },
+          { "id": "dt_safe", "label": "Safe to Interact" }
+        ],
+        "choices": [
+          { "text": "Correct", "isCorrect": true, "feedbackText": "Great job! Always verify scary forwards (Fake News), never share passwords (Scams), and it's fine to interact with real friends.", "nextSceneId": "cs1_end" },
+          { "text": "Incorrect", "isCorrect": false, "feedbackText": "Try again! Remember, no real company will ever ask for your password via email.", "nextSceneId": "cs1_end" }
+        ]
+      },
+      {
+        "id": "cs1_end",
+        "type": "story",
+        "text": "You successfully avoided the scam and stopped the spread of fake news! Your digital identity remains secure.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

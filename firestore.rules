@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if the user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if the user is the document owner
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // Helper: Check if the user is an admin
+    function isAdmin() {
+      return isAuth() && request.auth.token.role == 'admin';
+    }
+
+    // Parents collection
+    match /parents/{parentId} {
+      allow read: if isOwner(parentId);
+      allow create: if isAuth() && request.auth.uid == parentId;
+      allow update: if isOwner(parentId);
+      allow delete: if false; // Parents cannot delete their own account via Firestore
+
+      // Children sub-collection
+      match /children/{childId} {
+        allow read, write: if isOwner(parentId);
+      }
+    }
+
+    // Modules (public read, admin write)
+    match /modules/{moduleId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+
+      // Scenes sub-collection
+      match /scenes/{sceneId} {
+        allow read: if isAuth();
+        allow write: if isAdmin();
+      }
+    }
+
+    // Progress
+    match /progress/{progressId} {
+      allow read: if isAuth() && (
+        resource.data.parentId == request.auth.uid || isAdmin()
+      );
+      allow create, update: if isAuth() && request.resource.data.parentId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Badges (public read, admin write)
+    match /badges/{badgeId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Community Posts
+    match /communityPosts/{postId} {
+      // Anyone authenticated can read approved posts
+      allow read: if isAuth() && (
+        resource.data.status == 'approved' || isAdmin()
+      );
+      // Authenticated users can create posts (status must be 'pending')
+      allow create: if isAuth() && request.resource.data.status == 'pending';
+      // Only admins can update post status
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Support Requests
+    match /supportRequests/{requestId} {
+      allow read: if isAdmin();
+      allow create: if isAuth();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Organizations
+    match /organizations/{orgId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Feedback
+    match /feedback/{feedbackId} {
+      allow read: if isAdmin();
+      allow create: if isAuth();
+      allow update, delete: if false;
+    }
+  }
+}

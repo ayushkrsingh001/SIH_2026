@@ -1,0 +1,138 @@
+[
+  {
+    "id": "la_mod_1",
+    "title": "Fundamental Rights",
+    "description": "Learn about the basic rights guaranteed to every citizen of India, such as the Right to Equality and Right to Education.",
+    "category": "Legal Awareness",
+    "difficulty": "Medium",
+    "estimatedMinutes": 12,
+    "ageRange": "10-15",
+    "order": 1,
+    "xpReward": 300,
+    "coinReward": 50,
+    "coverImageUrl": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "la1_s1",
+        "type": "story",
+        "text": "Your friend Meera is upset. She says the local sports club won't let her join the cricket team just because she is a girl. They said 'cricket is for boys'.",
+        "mediaUrl": "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&q=80&w=800",
+        "choices": [],
+        "nextSceneId": "la1_c1"
+      },
+      {
+        "id": "la1_c1",
+        "type": "choice",
+        "text": "Is the sports club allowed to do this?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "Yes, private clubs can make whatever rules they want.",
+            "isCorrect": false,
+            "feedbackText": "Actually, under the Right to Equality (Article 15), the State cannot discriminate based on religion, race, caste, sex, or place of birth. While private rules vary, discriminatory practices are legally and ethically wrong.",
+            "nextSceneId": "la1_s2"
+          },
+          {
+            "text": "No! This violates her Right to Equality.",
+            "isCorrect": true,
+            "feedbackText": "Correct! The Constitution of India guarantees the Right to Equality. Discriminating against someone based on their gender is against fundamental rights.",
+            "nextSceneId": "la1_s2"
+          }
+        ]
+      },
+      {
+        "id": "la1_s2",
+        "type": "story",
+        "text": "Meera decides to speak to the club manager, but she needs proof that children have the right to play and learn equally. She remembers another important right about going to school.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "la1_c2"
+      },
+      {
+        "id": "la1_c2",
+        "type": "time_challenge",
+        "timeLimit": 20,
+        "text": "Quick! Under the Right to Education (RTE) Act, education is free and compulsory for children of what age group?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "5 to 10 years", "isCorrect": false, "feedbackText": "It goes beyond 10 years! It covers elementary education.", "nextSceneId": "la1_s3" },
+          { "text": "6 to 14 years", "isCorrect": true, "feedbackText": "Perfect! The RTE Act makes education a fundamental right for every child between the ages of 6 and 14.", "nextSceneId": "la1_s3" }
+        ]
+      },
+      {
+        "id": "la1_s3",
+        "type": "story",
+        "text": "Armed with the knowledge of her fundamental rights, Meera and her parents confidently speak to the sports club management. They agree to change their outdated policy, and Meera joins the team!",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  },
+  {
+    "id": "la_mod_2",
+    "title": "Child Labour Laws",
+    "description": "Understand the laws that protect children from being forced to work instead of going to school.",
+    "category": "Legal Awareness",
+    "difficulty": "Hard",
+    "estimatedMinutes": 15,
+    "ageRange": "12-16",
+    "order": 2,
+    "xpReward": 350,
+    "coinReward": 60,
+    "coverImageUrl": "https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "la2_s1",
+        "type": "story",
+        "text": "You are at a local tea stall. You notice a young boy, maybe 10 years old, serving tea and washing glasses. He looks very tired and should be in school.",
+        "mediaUrl": "https://images.unsplash.com/photo-1591522810850-58128c5fb089?auto=format&fit=crop&q=80&w=800",
+        "choices": [],
+        "nextSceneId": "la2_c1"
+      },
+      {
+        "id": "la2_c1",
+        "type": "choice",
+        "text": "What does the law say about this?",
+        "mediaUrl": null,
+        "choices": [
+          {
+            "text": "It's fine as long as the stall owner pays him.",
+            "isCorrect": false,
+            "feedbackText": "No! Paying a child does not make child labour legal. Children under 14 are strictly prohibited from working in any commercial establishment.",
+            "nextSceneId": "la2_s2"
+          },
+          {
+            "text": "It is illegal. Children under 14 cannot be employed.",
+            "isCorrect": true,
+            "feedbackText": "Correct! The Child Labour (Prohibition and Regulation) Act completely bans the employment of children below 14 years of age.",
+            "nextSceneId": "la2_s2"
+          }
+        ]
+      },
+      {
+        "id": "la2_s2",
+        "type": "spot_danger",
+        "text": "You want to help him. You look around for a way to report this secretly. Tap the safest resource to use.",
+        "mediaUrl": "https://images.unsplash.com/photo-1588702545922-762886f4a811?auto=format&fit=crop&q=80&w=800",
+        "dangerZones": [
+          { "id": "dz1", "x": 50, "y": 50, "radius": 30, "description": "Call Childline 1098 on a phone" }
+        ],
+        "choices": [
+          { "text": "Correct Spot", "isCorrect": true, "feedbackText": "Yes! Calling 1098 (Childline) is the best and safest way to report child labour anonymously.", "nextSceneId": "la2_end" },
+          { "text": "Wrong Spot", "isCorrect": false, "feedbackText": "You should use a phone to call Childline 1098 rather than confronting the owner directly, which could be unsafe.", "nextSceneId": "la2_end" }
+        ]
+      },
+      {
+        "id": "la2_end",
+        "type": "story",
+        "text": "You call 1098 and report the location. The Childline team arrives later that week, rescues the boy, and ensures he gets enrolled in a school. You used your legal awareness to save a child's future!",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "dp_mod_1",
+    "title": "Earthquake Response",
+    "description": "Learn the vital steps of 'Drop, Cover, and Hold On' during an earthquake to protect yourself from falling debris.",
+    "category": "Disaster Preparedness",
+    "difficulty": "Medium",
+    "estimatedMinutes": 10,
+    "ageRange": "all",
+    "order": 1,
+    "xpReward": 200,
+    "coinReward": 40,
+    "coverImageUrl": "https://images.unsplash.com/photo-1542385151-efd9000785a0?auto=format&fit=crop&q=80&w=800",
+    "prerequisiteModuleId": null,
+    "scenes": [
+      {
+        "id": "dp1_s1",
+        "type": "story",
+        "text": "You are sitting at your desk in school. Suddenly, the ground begins to shake violently. Books start falling off the shelves.",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": "dp1_c1"
+      },
+      {
+        "id": "dp1_c1",
+        "type": "time_challenge",
+        "timeLimit": 10,
+        "text": "An earthquake is happening! QUICK, what do you do first?",
+        "mediaUrl": null,
+        "choices": [
+          { "text": "Run outside immediately!", "isCorrect": false, "feedbackText": "Running outside during an earthquake is extremely dangerous. Things can fall on you while you run.", "nextSceneId": "dp1_s2" },
+          { "text": "Drop, Cover, and Hold On!", "isCorrect": true, "feedbackText": "Exactly! DROP to your hands and knees, COVER your head and neck (preferably under a sturdy desk), and HOLD ON.", "nextSceneId": "dp1_s2" }
+        ]
+      },
+      {
+        "id": "dp1_s2",
+        "type": "spot_danger",
+        "text": "You need to find cover. Tap the safest place in the classroom to take cover.",
+        "mediaUrl": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&q=80&w=800",
+        "dangerZones": [
+          { "id": "dz1", "x": 60, "y": 70, "radius": 20, "description": "Under the sturdy wooden desk" }
+        ],
+        "choices": [
+          { "text": "Correct Spot", "isCorrect": true, "feedbackText": "Yes! A sturdy desk will protect you from falling debris.", "nextSceneId": "dp1_s3" },
+          { "text": "Wrong Spot", "isCorrect": false, "feedbackText": "You should seek cover underneath a sturdy piece of furniture like a desk, not near windows or tall bookshelves.", "nextSceneId": "dp1_s3" }
+        ]
+      },
+      {
+        "id": "dp1_s3",
+        "type": "story",
+        "text": "The shaking stops after a minute. Your teacher instructs everyone to evacuate to the school ground safely. You followed the disaster protocols and stayed safe!",
+        "mediaUrl": null,
+        "choices": [],
+        "nextSceneId": null
+      }
+    ]
+  }
+]
