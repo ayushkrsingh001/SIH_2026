@@ -83,17 +83,6 @@ const WhosPlaying = () => {
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
 
-      {/* Back to Dashboard */}
-      <div className="w-full max-w-4xl mb-6 relative z-10 flex justify-start">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 hover:bg-white backdrop-blur-sm border border-outline-variant shadow-sm text-on-surface-variant hover:text-primary transition-all duration-300"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          <span className="font-headline text-label-md">Back to Parent Dashboard</span>
-        </button>
-      </div>
-
       <div className="w-full max-w-4xl relative z-10 flex flex-col items-center">
         
         {/* Header Section */}
@@ -119,10 +108,10 @@ const WhosPlaying = () => {
           </div>
           
           <h1 className="font-headline text-display-md md:text-display-lg text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary mb-3 drop-shadow-sm font-black tracking-tight">
-            Who's Playing Today?
+            Who are you?
           </h1>
           <p className="font-body text-title-lg text-on-surface-variant max-w-md mx-auto">
-            {selectedChild ? `Unlock ${selectedChild.displayName}'s world` : 'Select your profile to continue your adventure!'}
+            {selectedChild ? `Unlock ${selectedChild.displayName}'s world` : 'Select your profile to continue.'}
           </p>
         </motion.div>
 
@@ -137,6 +126,31 @@ const WhosPlaying = () => {
               exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
               transition={{ duration: 0.3 }}
             >
+              {/* Parent Card */}
+              <motion.button
+                key="parent"
+                onClick={() => navigate('/dashboard')}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0, type: 'spring', stiffness: 300, damping: 24 }}
+                className="group relative bg-white rounded-[32px] p-6 shadow-elevation-2 hover:shadow-elevation-4 transition-all duration-300 flex flex-col items-center text-center overflow-hidden border-2 border-transparent hover:border-primary/20"
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <div className="relative z-10 mb-4 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-md scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-md group-hover:border-primary-container transition-colors duration-300 bg-surface-container-high flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[48px] md:text-[56px] text-primary">admin_panel_settings</span>
+                  </div>
+                </div>
+
+                <h3 className="relative z-10 font-headline text-headline-sm text-on-surface mt-2 truncate w-full group-hover:text-primary transition-colors">
+                  Parent Dashboard
+                </h3>
+              </motion.button>
+
               {children.map((child, index) => {
                 const avatar = getAvatar(child.avatarId);
                 const levelInfo = calculateLevel(child.xp);
@@ -146,7 +160,7 @@ const WhosPlaying = () => {
                     onClick={() => handleChildSelect(child)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, type: 'spring', stiffness: 300, damping: 24 }}
+                    transition={{ delay: (index + 1) * 0.1, type: 'spring', stiffness: 300, damping: 24 }}
                     className="group relative bg-white rounded-[32px] p-6 shadow-elevation-2 hover:shadow-elevation-4 transition-all duration-300 flex flex-col items-center text-center overflow-hidden border-2 border-transparent hover:border-primary/20"
                     whileHover={{ y: -8, scale: 1.02 }}
                     whileTap={{ scale: 0.96 }}

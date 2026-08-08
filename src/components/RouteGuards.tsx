@@ -55,7 +55,7 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/play" replace />;
   }
 
   return <>{children}</>;

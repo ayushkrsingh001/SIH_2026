@@ -4,6 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { MASCOT_SMALL_URL } from '../constants';
+import { useChild } from '../contexts/ChildContext';
+import { useEffect, useState } from 'react';
+import { getParent, updateParent } from '../firebase/firestore';
 
 const pageVariants = {
   initial: { opacity: 0, y: 15 },
@@ -15,9 +18,43 @@ export const ParentLayout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { setActiveChild } = useChild();
+
+  const [isCheckingPin, setIsCheckingPin] = useState(true);
+  const [hasPin, setHasPin] = useState(false);
+  const [pinVerified, setPinVerified] = useState(() => sessionStorage.getItem('parentPinVerified') === 'true');
+  const [pinInput, setPinInput] = useState('');
+  const [error, setError] = useState('');
+  const [expectedPin, setExpectedPin] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveChild(null);
+  }, [setActiveChild]);
+
+  useEffect(() => {
+    const fetchParentData = async () => {
+      if (user?.uid) {
+        try {
+          const parentData = await getParent(user.uid);
+          if (parentData?.pin) {
+            setHasPin(true);
+            setExpectedPin(parentData.pin);
+          } else {
+            setHasPin(false);
+          }
+        } catch (err) {
+          console.error("Failed to fetch parent PIN status", err);
+        } finally {
+          setIsCheckingPin(false);
+        }
+      }
+    };
+    fetchParentData();
+  }, [user?.uid]);
 
   const handleLogout = async () => {
     try {
+      sessionStorage.removeItem('parentPinVerified');
       await signOut(auth);
       navigate('/');
     } catch (error) {
@@ -25,13 +62,109 @@ export const ParentLayout = () => {
     }
   };
 
+  const handlePinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.length !== 4) {
+      setError("PIN must be 4 digits");
+      return;
+    }
+
+    if (hasPin) {
+      if (pinInput === expectedPin) {
+        setPinVerified(true);
+        sessionStorage.setItem('parentPinVerified', 'true');
+        setError('');
+      } else {
+        setError("Incorrect PIN");
+        setPinInput('');
+      }
+    } else {
+      if (user?.uid) {
+        try {
+          setIsCheckingPin(true);
+          await updateParent(user.uid, { pin: pinInput });
+          setHasPin(true);
+          setExpectedPin(pinInput);
+          setPinVerified(true);
+          sessionStorage.setItem('parentPinVerified', 'true');
+          setError('');
+        } catch (err) {
+          console.error("Failed to save PIN", err);
+          setError("Failed to save PIN");
+        } finally {
+          setIsCheckingPin(false);
+        }
+      }
+    }
+  };
+
   const navItems = [
     { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/play', icon: 'play_circle', label: 'Play' },
     { path: '/community', icon: 'forum', label: 'Community' },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);
+
+  if (isCheckingPin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!pinVerified) {
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-[#FDFBF7] font-body flex flex-col items-center justify-center p-4">
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none animate-float" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-tertiary/5 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
+        
+        <div className="bg-white/70 backdrop-blur-xl p-8 rounded-2xl shadow-lg border border-outline-variant max-w-sm w-full z-10 relative">
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center overflow-hidden mb-4">
+              <img alt="RightsQuest Mascot" className="w-full h-full object-cover" src={MASCOT_SMALL_URL} />
+            </div>
+            <h2 className="text-headline-sm font-headline font-bold text-primary text-center">
+              {hasPin ? "Enter Parent PIN" : "Create Parent PIN"}
+            </h2>
+            <p className="text-body-md text-on-surface-variant text-center mt-2">
+              {hasPin ? "Enter your 4-digit PIN to access the dashboard." : "Set a 4-digit PIN to secure the parent dashboard from your child."}
+            </p>
+          </div>
+
+          <form onSubmit={handlePinSubmit} className="flex flex-col gap-4">
+            <div className="flex justify-center">
+              <input
+                type="password"
+                maxLength={4}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
+                className="w-32 text-center text-2xl tracking-widest p-3 rounded-lg border border-outline bg-surface-container-low focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+                placeholder="••••"
+                autoFocus
+              />
+            </div>
+            {error && <p className="text-error text-label-md text-center">{error}</p>}
+            
+            <button 
+              type="submit"
+              disabled={pinInput.length !== 4}
+              className="bg-primary text-on-primary py-3 rounded-xl font-bold mt-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {hasPin ? "Unlock" : "Set PIN"}
+            </button>
+            <button 
+              type="button"
+              onClick={handleLogout}
+              className="text-on-surface-variant py-2 rounded-xl text-label-md mt-2 hover:bg-surface-container transition-colors"
+            >
+              Log Out
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#FDFBF7] font-body flex flex-col md:flex-row">
@@ -55,9 +188,6 @@ export const ParentLayout = () => {
             </Link>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => navigate('/play')} className="text-on-surface-variant hover:text-primary transition-colors" aria-label="Play">
-              <span className="material-symbols-outlined">play_circle</span>
-            </button>
             <button onClick={handleLogout} className="text-on-surface-variant hover:text-primary transition-colors" aria-label="Logout">
               <span className="material-symbols-outlined">logout</span>
             </button>
@@ -115,12 +245,6 @@ export const ParentLayout = () => {
 
         <ul className="flex flex-col gap-2 mt-auto">
           <li>
-            <Link to="/play" className="flex items-center gap-4 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 px-4 py-3 transition-all">
-              <span className="material-symbols-outlined">help</span>
-              <span className="font-body text-body-md font-semibold">Help Center</span>
-            </Link>
-          </li>
-          <li>
             <button onClick={handleLogout} className="flex items-center gap-4 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 px-4 py-3 transition-all w-full text-left">
               <span className="material-symbols-outlined">logout</span>
               <span className="font-body text-body-md font-semibold">Log Out</span>
@@ -130,7 +254,7 @@ export const ParentLayout = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow relative z-10 w-full max-w-container-max mx-auto px-4 md:px-gutter py-8 md:py-12 md:ml-64">
+      <main className="flex-grow relative z-10 w-full md:w-[calc(100%-16rem)] max-w-container-max mx-auto px-4 md:px-gutter py-8 md:py-12 md:ml-64">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

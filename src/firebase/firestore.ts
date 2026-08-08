@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 import type {
-  Child, Module, Scene, Progress, Badge,
+  Parent, Child, Module, Scene, Progress, Badge,
   SupportRequest, AvatarOption,
   ParentPost,
   PostComment,
@@ -27,6 +27,16 @@ import type {
   PostReport,
   Notification as AppNotification
 } from '../types';
+
+// ========== PARENTS ==========
+export const getParent = async (parentId: string): Promise<Parent | null> => {
+  const snap = await getDoc(doc(db, 'parents', parentId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } as Parent : null;
+};
+
+export const updateParent = async (parentId: string, data: Partial<Parent>) => {
+  await updateDoc(doc(db, 'parents', parentId), data);
+};
 
 // ========== CHILDREN ==========
 export const getChildren = async (parentId: string): Promise<Child[]> => {

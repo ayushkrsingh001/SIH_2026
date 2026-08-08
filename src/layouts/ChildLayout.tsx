@@ -19,7 +19,6 @@ export const ChildLayout = () => {
     { path: `/play/${childId}/store`, icon: 'storefront', label: 'Store' },
     { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: 'Ranks' },
     { path: `/play/${childId}/multiplayer`, icon: 'swords', label: 'Battle' },
-    { path: '/community', icon: 'forum', label: 'Community' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -37,14 +36,34 @@ export const ChildLayout = () => {
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl shadow-sm border-b border-outline-variant">
         <div className="flex justify-between items-center w-full px-4 md:px-gutter py-3 max-w-container-max mx-auto">
+          {/* Logo Section */}
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back to Dashboard">
+            <button onClick={() => navigate('/play')} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back to Profile Selection">
               <span className="material-symbols-outlined text-[20px]">arrow_back</span>
             </button>
             <img src={MASCOT_SMALL_URL} alt="RightsQuest Mascot" className="w-10 h-10 rounded-full object-cover hidden sm:block" />
             <span className="font-headline text-title-lg font-bold text-primary hidden sm:block">RightsQuest</span>
           </div>
 
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+            {navItems.map(item => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
+                  isActive(item.path)
+                    ? 'bg-primary-container text-on-primary-container font-bold border-b-2 border-on-primary-fixed-variant'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+              >
+                <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''} text-[20px]`}>{item.icon}</span>
+                <span className="font-body text-label-lg">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Actions Section */}
           <div className="flex items-center gap-3">
             {/* Get Help Button - Always Visible */}
             <motion.button
@@ -64,8 +83,8 @@ export const ChildLayout = () => {
                 <img src={avatar.imageUrl} alt={activeChild?.displayName || 'Player'} className="w-full h-full object-cover" />
               </div>
               <div className="hidden sm:block">
-                <p className="font-body text-label-md text-on-surface">{activeChild?.displayName}</p>
-                <p className="font-body text-caption text-primary">Lvl {levelInfo.level} {levelInfo.title}</p>
+                <p className="font-body text-label-md text-on-surface leading-tight">{activeChild?.displayName}</p>
+                <p className="font-body text-caption text-primary leading-tight">Lvl {levelInfo.level} {levelInfo.title}</p>
               </div>
             </div>
 

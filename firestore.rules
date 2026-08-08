@@ -59,15 +59,152 @@ service cloud.firestore {
 
     // Community Posts
     match /communityPosts/{postId} {
-      // Anyone authenticated can read approved posts
-      allow read: if isAuth() && (
-        resource.data.status == 'approved' || isAdmin()
-      );
-      // Authenticated users can create posts (status must be 'pending')
-      allow create: if isAuth() && request.resource.data.status == 'pending';
-      // Only admins can update post status
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isAuth(); // Allow reading all posts for the feed (filtering is done on client/query)
+      allow create: if isAuth();
+      allow update: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin() || (isAuth() && resource.data.authorId == request.auth.uid);
+    }
+
+    match /communityLikes/{likeId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+    
+    match /communityComments/{commentId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
+    // ========== COMMUNITY V2 COLLECTIONS ==========
+    
+    match /campaigns/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /campaignParticipations/{docId} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /weeklyChallenges/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /weeklyChallengeProgress/{docId} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /nearbyEvents/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+      // Allow users to update registeredCount
+      allow update: if isAuth(); 
+    }
+    
+    match /eventRegistrations/{docId} {
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /chatSessions/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /legalNews/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /newsReadStatus/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    match /mythFacts/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /mythFactProgress/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    match /feedQuizzes/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /feedQuizAttempts/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    match /awarenessShorts/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+      // Allow users to update metrics (likes, bookmarks, shares, views)
+      allow update: if isAuth(); 
+    }
+    
+    match /shortInteractions/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /realStories/{docId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+      // Need to allow anyone to increment likes/comments/bookmarks
+      allow update: if isAuth(); 
+      allow delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+    
+    match /storyLikes/{docId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+    
+    match /storyComments/{docId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if isAuth() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+    
+    match /verifiedUsers/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+    
+    match /scamAlerts/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+      // Allow users to report
+      allow update: if isAuth(); 
+    }
+    
+    match /scamAlertInteractions/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /communityBookmarks/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
     }
 
     // Support Requests

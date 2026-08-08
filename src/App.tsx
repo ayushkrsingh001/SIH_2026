@@ -68,10 +68,11 @@ const AnimatedRoutes = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Parent Routes */}
-        <Route path="/dashboard" element={<ProtectedRoute><ParentLayout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
-          <Route path="add-child" element={<AddChild />} />
-          <Route path="edit-child/:childId" element={<AddChild />} />
+        <Route element={<ProtectedRoute><ParentLayout /></ProtectedRoute>}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/add-child" element={<AddChild />} />
+          <Route path="/dashboard/edit-child/:childId" element={<AddChild />} />
+          <Route path="/community" element={<Community />} />
         </Route>
 
         {/* Who's Playing */}
@@ -92,10 +93,7 @@ const AnimatedRoutes = () => {
           <Route path="ai-complete/:aiLevelId" element={<AIQuestComplete />} />
         </Route>
 
-        {/* Community (available in both layouts) */}
-        <Route path="/community" element={<ProtectedRoute><ParentLayout /></ProtectedRoute>}>
-          <Route index element={<Community />} />
-        </Route>
+        {/* Community is now grouped under Parent Routes above */}
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>

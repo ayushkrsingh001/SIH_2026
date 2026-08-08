@@ -7,13 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fetch-news": "npx vite-node src/scripts/fetchNews.ts"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "date-fns": "^4.4.0",
     "firebase": "^12.17.1",
     "framer-motion": "^13.0.0",
+    "groq-sdk": "^1.5.0",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -47,3 +47,67 @@ export const HELP_CATEGORIES = [
 ] as const;
 
 export const MAX_CHILDREN = 5;
+
+// ========== COMMUNITY PLATFORM CONSTANTS ==========
+
+import type { CommunityCategory, CommunityCategoryId } from '../types';
+
+export const COMMUNITY_CATEGORIES: CommunityCategory[] = [
+  { id: 'girls_safety', label: 'Girls Safety', icon: 'female', emoji: '👧', color: '#E91E63', bgAccent: 'rgba(233, 30, 99, 0.08)', badgeLabel: 'Girls Safety Champion' },
+  { id: 'child_rights', label: 'Child Rights', icon: 'child_care', emoji: '👦', color: '#2196F3', bgAccent: 'rgba(33, 150, 243, 0.08)', badgeLabel: 'Child Rights Advocate' },
+  { id: 'cyber_safety', label: 'Cyber Safety', icon: 'security', emoji: '💻', color: '#9C27B0', bgAccent: 'rgba(156, 39, 176, 0.08)', badgeLabel: 'Cyber Guardian' },
+  { id: 'self_defence', label: 'Self Defence', icon: 'shield', emoji: '🛡', color: '#FF5722', bgAccent: 'rgba(255, 87, 34, 0.08)', badgeLabel: 'Defence Expert' },
+  { id: 'police_awareness', label: 'Police Awareness', icon: 'local_police', emoji: '🚔', color: '#3F51B5', bgAccent: 'rgba(63, 81, 181, 0.08)', badgeLabel: 'Law Aware' },
+  { id: 'mental_health', label: 'Mental Health', icon: 'psychology', emoji: '🧠', color: '#00BCD4', bgAccent: 'rgba(0, 188, 212, 0.08)', badgeLabel: 'Wellness Champion' },
+  { id: 'road_safety', label: 'Road Safety', icon: 'traffic', emoji: '🚦', color: '#FF9800', bgAccent: 'rgba(255, 152, 0, 0.08)', badgeLabel: 'Road Safety Star' },
+  { id: 'consumer_rights', label: 'Consumer Rights', icon: 'gavel', emoji: '⚖', color: '#795548', bgAccent: 'rgba(121, 85, 72, 0.08)', badgeLabel: 'Consumer Champion' },
+  { id: 'environment', label: 'Environment', icon: 'eco', emoji: '🌍', color: '#4CAF50', bgAccent: 'rgba(76, 175, 80, 0.08)', badgeLabel: 'Eco Warrior' },
+  { id: 'constitution', label: 'Constitution', icon: 'account_balance', emoji: '📚', color: '#607D8B', bgAccent: 'rgba(96, 125, 139, 0.08)', badgeLabel: 'Constitution Scholar' },
+  { id: 'school_safety', label: 'School Safety', icon: 'school', emoji: '🏫', color: '#009688', bgAccent: 'rgba(0, 150, 136, 0.08)', badgeLabel: 'School Safety Pro' },
+  { id: 'digital_privacy', label: 'Digital Privacy', icon: 'phonelink_lock', emoji: '📱', color: '#673AB7', bgAccent: 'rgba(103, 58, 183, 0.08)', badgeLabel: 'Privacy Guardian' },
+];
+
+export const getCategoryById = (id: CommunityCategoryId): CommunityCategory =>
+  COMMUNITY_CATEGORIES.find(c => c.id === id) || COMMUNITY_CATEGORIES[0];
+
+export const EMERGENCY_NUMBERS = [
+  { number: '112', label: 'National Emergency', icon: 'emergency' },
+  { number: '1098', label: 'Childline', icon: 'child_care' },
+  { number: '1091', label: 'Women Helpline', icon: 'female' },
+  { number: '1930', label: 'Cyber Crime', icon: 'security' },
+  { number: '100', label: 'Police', icon: 'local_police' },
+  { number: '101', label: 'Fire', icon: 'local_fire_department' },
+  { number: '108', label: 'Ambulance', icon: 'emergency' },
+];
+
+export const EVENT_TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
+  police_workshop: { label: 'Police Workshop', icon: 'local_police', color: '#3F51B5' },
+  cyber_awareness: { label: 'Cyber Awareness Camp', icon: 'security', color: '#9C27B0' },
+  legal_aid: { label: 'Legal Aid Camp', icon: 'gavel', color: '#795548' },
+  ngo_drive: { label: 'NGO Awareness Drive', icon: 'volunteer_activism', color: '#4CAF50' },
+  women_safety: { label: 'Women Safety Workshop', icon: 'female', color: '#E91E63' },
+  child_rights: { label: 'Child Rights Event', icon: 'child_care', color: '#2196F3' },
+};
+
+export const STORY_TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
+  experience: { label: 'Experience', icon: 'auto_stories', color: '#2196F3' },
+  incident: { label: 'Incident', icon: 'report', color: '#F44336' },
+  success_story: { label: 'Success Story', icon: 'emoji_events', color: '#4CAF50' },
+  question: { label: 'Question', icon: 'help', color: '#FF9800' },
+  advice: { label: 'Advice', icon: 'lightbulb', color: '#9C27B0' },
+};
+
+export const VERIFIED_TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
+  legal_expert: { label: 'Verified Legal Expert', icon: 'verified', color: '#2196F3' },
+  ngo: { label: 'Verified NGO', icon: 'volunteer_activism', color: '#4CAF50' },
+  police: { label: 'Verified Police', icon: 'local_police', color: '#3F51B5' },
+  teacher: { label: 'Verified Teacher', icon: 'school', color: '#FF9800' },
+  parent_mentor: { label: 'Verified Parent Mentor', icon: 'supervisor_account', color: '#9C27B0' },
+};
+
+export const SCAM_SEVERITY_META: Record<string, { label: string; color: string; bgColor: string }> = {
+  high: { label: 'High Risk', color: '#D32F2F', bgColor: 'rgba(211, 47, 47, 0.1)' },
+  medium: { label: 'Medium Risk', color: '#F57C00', bgColor: 'rgba(245, 124, 0, 0.1)' },
+  low: { label: 'Low Risk', color: '#FBC02D', bgColor: 'rgba(251, 192, 45, 0.1)' },
+};
+

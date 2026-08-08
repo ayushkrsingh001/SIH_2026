@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import type { AIGeneratedLevel, LevelContext } from '../types';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
 const SYSTEM_INSTRUCTION = `You are an educational game content generator for "RightsQuest", an Indian legal awareness game for children aged 8-16.
 
@@ -123,43 +123,47 @@ REQUIREMENTS:
   return prompt;
 }
 
-class GeminiLevelGenerator {
-  private genAI: GoogleGenerativeAI | null = null;
+class GroqLevelGenerator {
+  private groqClient: Groq | null = null;
 
-  private getClient(): GoogleGenerativeAI {
-    if (!this.genAI) {
+  private getClient(): Groq {
+    if (!this.groqClient) {
       if (!API_KEY) {
-        throw new Error('VITE_GEMINI_API_KEY is not set. Please add it to your .env file.');
+        throw new Error('VITE_GROQ_API_KEY is not set. Please add it to your .env file.');
       }
-      this.genAI = new GoogleGenerativeAI(API_KEY);
+      this.groqClient = new Groq({ apiKey: API_KEY, dangerouslyAllowBrowser: true });
     }
-    return this.genAI;
+    return this.groqClient;
   }
 
-  private async callGemini(userPrompt: string, retries = 2): Promise<AIGeneratedLevel> {
+  private cleanJson(text: string): string {
+    return text.replace(/```json/g, '').replace(/```/g, '').trim();
+  }
+
+  private async callGroq(userPrompt: string, retries = 2): Promise<AIGeneratedLevel> {
     const client = this.getClient();
-    const model = client.getGenerativeModel({
-      model: 'gemini-3.5-flash',
-      systemInstruction: SYSTEM_INSTRUCTION,
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-        responseMimeType: 'application/json',
-      },
-    });
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const result = await model.generateContent(userPrompt);
-        const text = result.response.text();
+        const response = await client.chat.completions.create({
+          model: 'llama-3.1-8b-instant',
+          messages: [
+            { role: 'system', content: SYSTEM_INSTRUCTION },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 4096,
+          response_format: { type: 'json_object' }
+        });
+
+        const text = response.choices[0]?.message?.content || '{}';
         
         // Parse and validate
-        const parsed = JSON.parse(text) as AIGeneratedLevel;
+        const parsed = JSON.parse(this.cleanJson(text)) as AIGeneratedLevel;
         this.validateLevel(parsed);
         return parsed;
       } catch (err) {
-        console.error(`Gemini attempt ${attempt + 1} failed:`, err);
+        console.error(`Groq attempt ${attempt + 1} failed:`, err);
         if (attempt === retries) {
           throw new Error(`Failed to generate level after ${retries + 1} attempts: ${err}`);
         }
@@ -192,7 +196,7 @@ class GeminiLevelGenerator {
 
   async generateLevel(context: LevelContext): Promise<AIGeneratedLevel> {
     const prompt = buildPrompt(context, 'playable educational level');
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async generateDailyChallenge(context: LevelContext): Promise<AIGeneratedLevel> {
@@ -205,7 +209,7 @@ class GeminiLevelGenerator {
 - Badge should be "Daily Champion" if score is 100%.`;
     
     const prompt = buildPrompt(context, 'daily challenge', extra);
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async generateRevisionQuiz(context: LevelContext, weakTopics: string[]): Promise<AIGeneratedLevel> {
@@ -218,7 +222,7 @@ class GeminiLevelGenerator {
 - Use encouraging language.`;
     
     const prompt = buildPrompt(context, 'revision quiz', extra);
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async generateBonusStory(context: LevelContext, completedTopic: string): Promise<AIGeneratedLevel> {
@@ -230,7 +234,7 @@ class GeminiLevelGenerator {
 - Badge should be "Story Explorer".`;
     
     const prompt = buildPrompt(context, 'bonus story level', extra);
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async generateEventLevel(context: LevelContext, eventKey: string): Promise<AIGeneratedLevel> {
@@ -246,7 +250,7 @@ class GeminiLevelGenerator {
 - Badge should be "${event.name} Champion".`;
     
     const prompt = buildPrompt(context, 'special event level', extra);
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async generatePractice(context: LevelContext, topic: string): Promise<AIGeneratedLevel> {
@@ -258,7 +262,7 @@ class GeminiLevelGenerator {
 - No badge for practice, but full XP.`;
     
     const prompt = buildPrompt(context, 'practice session', extra);
-    return this.callGemini(prompt);
+    return this.callGroq(prompt);
   }
 
   async moderateCommunityPost(title: string, description: string, tags: string[]): Promise<{ isSafe: boolean; reason?: string; suggestedTags?: string[] }> {
@@ -282,20 +286,106 @@ OUTPUT EXACT JSON:
     
     try {
       const client = this.getClient();
-      const model = client.getGenerativeModel({
-        model: 'gemini-3.5-flash',
-        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        response_format: { type: 'json_object' }
       });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      return JSON.parse(text);
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
     } catch (err) {
       console.error('Moderation failed, defaulting to safe:', err);
       return { isSafe: true, suggestedTags: [] };
     }
   }
+
+  async answerLegalQuestion(
+    question: string,
+    conversationHistory: { role: string; content: string }[] = []
+  ): Promise<{ answer: string; emergencyNumbers?: string[]; relatedTopics?: string[] }> {
+    const historyContext = conversationHistory.length > 0
+      ? `\nPREVIOUS CONVERSATION:\n${conversationHistory.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n')}\n`
+      : '';
+
+    const prompt = `You are a friendly, knowledgeable Legal Awareness AI assistant for Indian parents on the RightsQuest platform.
+${historyContext}
+PARENT'S QUESTION: ${question}
+
+RULES:
+1. Answer in simple, clear language that any parent can understand.
+2. Only reference real Indian laws, acts, articles, and sections.
+3. If the question involves an emergency, ALWAYS include relevant emergency numbers.
+4. Provide actionable steps the parent can take.
+5. If the topic relates to child safety, suggest relevant RightsQuest learning topics.
+6. Be empathetic, supportive, and non-judgmental.
+7. If you are unsure about a specific law, say so honestly rather than inventing information.
+8. Keep responses concise but comprehensive (200-400 words).
+9. Use bullet points for steps and lists.
+10. Indian Emergency Numbers: 112 (National Emergency), 1098 (Childline), 1091 (Women Helpline), 1930 (Cyber Crime), 100 (Police), 101 (Fire), 108 (Ambulance).
+
+OUTPUT EXACT JSON:
+{
+  "answer": "Your detailed response here with markdown formatting",
+  "emergencyNumbers": ["112", "1098"],
+  "relatedTopics": ["Cyber Safety", "Child Rights"]
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2048,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Legal AI failed:', err);
+      return {
+        answer: 'I apologize, but I\'m having trouble processing your question right now. Please try again in a moment. If this is an emergency, please call **112** (National Emergency) or **1098** (Childline) immediately.',
+        emergencyNumbers: ['112', '1098'],
+      };
+    }
+  }
+
+  async moderateStory(title: string, content: string, storyType: string): Promise<{ isSafe: boolean; reason?: string }> {
+    const prompt = `You are a moderation AI for a child safety community platform.
+Analyze this user story:
+TYPE: ${storyType}
+TITLE: ${title}
+CONTENT: ${content}
+
+RULES:
+1. Reject if it contains hate speech, violence details, child abuse details, spam, adult content, or personal identifiable information (full names, phone numbers, exact addresses).
+2. Accept if it is a genuine parent sharing experiences about child safety, legal awareness, or asking for help.
+3. Accept stories that discuss difficult topics (bullying, harassment, safety concerns) as long as they are shared respectfully and for awareness purposes.
+
+OUTPUT EXACT JSON:
+{
+  "isSafe": boolean,
+  "reason": "String explaining why if rejected, else null"
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Story moderation failed:', err);
+      return { isSafe: true };
+    }
+  }
 }
 
 // Singleton
-export const geminiService = new GeminiLevelGenerator();
+export const groqService = new GroqLevelGenerator();
 export { EVENT_THEMES, TOPIC_MAP, WORLD_NAMES };

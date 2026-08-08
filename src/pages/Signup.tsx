@@ -24,7 +24,7 @@ const Signup = () => {
     try {
       await signUpWithEmail(data.email, data.password, data.displayName);
       toast.success('Account created! Welcome to RightsQuest!');
-      navigate('/dashboard');
+      navigate('/play');
     } catch (err: unknown) {
       const error = err as { code?: string };
       if (error.code === 'auth/email-already-in-use') {
@@ -42,7 +42,7 @@ const Signup = () => {
     try {
       await loginWithGoogle();
       toast.success('Welcome to RightsQuest!');
-      navigate('/dashboard');
+      navigate('/play');
     } catch {
       toast.error('Google sign-in failed. Please try again.');
     } finally {

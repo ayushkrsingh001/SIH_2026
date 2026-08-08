@@ -1,7 +1,7 @@
 import type { AIGeneratedLevel, AIQuestion, Scene, Choice } from '../types';
 
 /**
- * Transforms an AI-generated level from Gemini into the existing Scene[] format
+ * Transforms an AI-generated level from Groq into the existing Scene[] format
  * so the ScenarioPlayer can play it without any changes.
  */
 export function transformAILevelToScenes(aiLevel: AIGeneratedLevel, moduleId: string): Scene[] {

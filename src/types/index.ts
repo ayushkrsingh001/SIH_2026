@@ -4,6 +4,7 @@ export interface Parent {
   id?: string;
   email: string;
   displayName: string;
+  pin?: string;
   createdAt: Timestamp;
 }
 
@@ -266,6 +267,413 @@ export interface AvatarOption {
 }
 
 export type UserRole = 'parent' | 'admin';
+
+// ========== COMMUNITY PLATFORM V2 TYPES ==========
+
+export type CommunityCategoryId =
+  | 'girls_safety'
+  | 'child_rights'
+  | 'cyber_safety'
+  | 'self_defence'
+  | 'police_awareness'
+  | 'mental_health'
+  | 'road_safety'
+  | 'consumer_rights'
+  | 'environment'
+  | 'constitution'
+  | 'school_safety'
+  | 'digital_privacy';
+
+export interface CommunityCategory {
+  id: CommunityCategoryId;
+  label: string;
+  icon: string;
+  emoji: string;
+  color: string;
+  bgAccent: string;
+  badgeLabel: string;
+}
+
+export interface Campaign {
+  id?: string;
+  title: string;
+  description: string;
+  bannerUrl: string;
+  imageUrl: string;
+  categoryId: CommunityCategoryId;
+  rewardXP: number;
+  rewardCoins: number;
+  rewardBadge?: string;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  totalTasks: number;
+  quizQuestions: CampaignQuizQuestion[];
+  learningResources: LearningResource[];
+  participantCount: number;
+  status: 'active' | 'upcoming' | 'ended';
+  createdAt: Timestamp;
+}
+
+export interface CampaignQuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface LearningResource {
+  title: string;
+  type: 'article' | 'video' | 'infographic';
+  url: string;
+  description: string;
+}
+
+export interface CampaignParticipation {
+  id?: string;
+  campaignId: string;
+  userId: string;
+  joinedAt: Timestamp;
+  completedTasks: number;
+  quizScore: number;
+  quizCompleted: boolean;
+  resourcesRead: string[];
+  completed: boolean;
+  completedAt: Timestamp | null;
+}
+
+export interface WeeklyChallenge {
+  id?: string;
+  title: string;
+  description: string;
+  weekStartDate: Timestamp;
+  weekEndDate: Timestamp;
+  tasks: WeeklyChallengeTask[];
+  rewardXP: number;
+  rewardCoins: number;
+  rewardBadge: string;
+  status: 'active' | 'upcoming' | 'ended';
+  createdAt: Timestamp;
+}
+
+export interface WeeklyChallengeTask {
+  id: string;
+  title: string;
+  description: string;
+  type: 'read_posts' | 'complete_quiz' | 'share_awareness' | 'learn_tips' | 'comment';
+  targetCount: number;
+  icon: string;
+}
+
+export interface WeeklyChallengeProgress {
+  id?: string;
+  challengeId: string;
+  userId: string;
+  taskProgress: Record<string, number>;
+  completed: boolean;
+  completedAt: Timestamp | null;
+  createdAt: Timestamp;
+}
+
+export interface NearbyEvent {
+  id?: string;
+  title: string;
+  description: string;
+  type: 'police_workshop' | 'cyber_awareness' | 'legal_aid' | 'ngo_drive' | 'women_safety' | 'child_rights';
+  location: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  date: Timestamp;
+  endDate?: Timestamp;
+  organizerName: string;
+  registeredCount: number;
+  maxCapacity: number;
+  imageUrl?: string;
+  mapsLink: string;
+  status: 'upcoming' | 'ongoing' | 'ended';
+  createdAt: Timestamp;
+}
+
+export interface EventRegistration {
+  id?: string;
+  eventId: string;
+  userId: string;
+  registeredAt: Timestamp;
+}
+
+export interface LegalAIChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  relatedLevels?: string[];
+  emergencyNumbers?: string[];
+}
+
+export interface ChatSession {
+  id?: string;
+  userId: string;
+  messages: LegalAIChatMessage[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  title: string;
+}
+
+export interface NewsQuizEmbedded {
+  questions: {
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+    xpReward: number;
+  }[];
+}
+
+export interface LegalNewsItem {
+  id?: string;
+  originalTitle: string;
+  title: string;
+  source: string;
+  sourceUrl: string;
+  image: string;
+  category: string;
+  summary: string;
+  parentExplanation: string;
+  whatHappened: string;
+  lessons: string;
+  safetyTips: string[];
+  legalPoints: string;
+  helplineNumbers: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  relatedTopic: string;
+  relatedLevel: string;
+  quiz: NewsQuizEmbedded;
+  xpReward: number;
+  createdAt: Timestamp;
+  status: 'active' | 'pending' | 'flagged' | 'deleted';
+  
+  // Interactions
+  viewsCount: number;
+  likesCount: number;
+  commentsCount: number;
+  bookmarksCount: number;
+  sharesCount: number;
+}
+
+export interface NewsQuizQuestion {
+  question: string;
+  type: 'mcq' | 'true_false' | 'decision';
+  options: string[];
+  correctAnswerIndex: number;
+  explanation: string;
+}
+
+export interface NewsQuiz {
+  id?: string;
+  newsId: string;
+  questions: NewsQuizQuestion[];
+  totalXP: number;
+}
+
+export interface NewsComment {
+  id?: string;
+  newsId: string;
+  authorId: string;
+  authorName: string;
+  authorPhoto?: string;
+  text: string;
+  likesCount: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface NewsLike {
+  id?: string;
+  newsId: string;
+  userId: string;
+  createdAt: Timestamp;
+}
+
+export interface NewsBookmark {
+  id?: string;
+  newsId: string;
+  userId: string;
+  createdAt: Timestamp;
+}
+
+export interface NewsReadStatus {
+  id?: string;
+  newsId: string;
+  userId: string;
+  readAt: Timestamp;
+  xpAwarded: boolean;
+}
+
+export interface MythFact {
+  id?: string;
+  myth: string;
+  fact: string;
+  explanation: string;
+  legalInfo: string;
+  categoryId: CommunityCategoryId;
+  rewardXP: number;
+  order: number;
+  createdAt: Timestamp;
+}
+
+export interface MythFactProgress {
+  id?: string;
+  mythFactId: string;
+  userId: string;
+  completed: boolean;
+  completedAt: Timestamp;
+}
+
+export interface FeedQuiz {
+  id?: string;
+  postId: string;
+  questions: FeedQuizQuestion[];
+  rewardXP: number;
+  createdAt: Timestamp;
+}
+
+export interface FeedQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface FeedQuizAttempt {
+  id?: string;
+  quizId: string;
+  userId: string;
+  answers: Record<string, string>;
+  score: number;
+  totalQuestions: number;
+  xpAwarded: boolean;
+  completedAt: Timestamp;
+}
+
+export interface AwarenessShort {
+  id?: string;
+  title: string;
+  description: string;
+  categoryId: CommunityCategoryId;
+  mediaUrl: string;
+  mediaType: 'video' | 'animation' | 'image_slideshow';
+  thumbnailUrl: string;
+  durationSeconds: number;
+  likesCount: number;
+  bookmarksCount: number;
+  sharesCount: number;
+  viewsCount: number;
+  rewardXP: number;
+  tags: string[];
+  createdAt: Timestamp;
+}
+
+export interface ShortInteraction {
+  id?: string;
+  shortId: string;
+  userId: string;
+  watched: boolean;
+  watchedPercent: number;
+  liked: boolean;
+  bookmarked: boolean;
+  xpAwarded: boolean;
+  updatedAt: Timestamp;
+}
+
+export type StoryType = 'experience' | 'incident' | 'success_story' | 'question' | 'advice';
+
+export interface RealStory {
+  id?: string;
+  authorId: string;
+  authorName: string;
+  authorPhoto?: string;
+  isAnonymous: boolean;
+  title: string;
+  content: string;
+  storyType: StoryType;
+  categoryId: CommunityCategoryId;
+  mediaUrls: string[];
+  tags: string[];
+  likesCount: number;
+  commentsCount: number;
+  bookmarksCount: number;
+  sharesCount: number;
+  isVerifiedAuthor: boolean;
+  verifiedType?: VerifiedType;
+  status: 'active' | 'pending' | 'flagged' | 'deleted';
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type VerifiedType = 'legal_expert' | 'ngo' | 'police' | 'teacher' | 'parent_mentor';
+
+export interface VerifiedUser {
+  id?: string;
+  userId: string;
+  displayName: string;
+  photoUrl?: string;
+  verifiedType: VerifiedType;
+  organization?: string;
+  verifiedAt: Timestamp;
+  verifiedBy: string;
+  isActive: boolean;
+}
+
+export type ScamSeverity = 'high' | 'medium' | 'low';
+
+export interface ScamAlert {
+  id?: string;
+  title: string;
+  description: string;
+  scamType: string;
+  severity: ScamSeverity;
+  howItWorks: string;
+  howToStaySafe: string;
+  reportLink?: string;
+  categoryId: CommunityCategoryId;
+  imageUrl?: string;
+  rewardXP: number;
+  quizQuestions: ScamQuizQuestion[];
+  reportCount: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface ScamQuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface ScamAlertInteraction {
+  id?: string;
+  alertId: string;
+  userId: string;
+  read: boolean;
+  quizCompleted: boolean;
+  quizScore: number;
+  bookmarked: boolean;
+  reported: boolean;
+  xpAwarded: boolean;
+  updatedAt: Timestamp;
+}
+
+export type BookmarkContentType = 'post' | 'story' | 'news' | 'event' | 'short' | 'scam_alert' | 'myth_fact';
+
+export interface CommunityBookmark {
+  id?: string;
+  userId: string;
+  contentType: BookmarkContentType;
+  contentId: string;
+  createdAt: Timestamp;
+}
 
 // ========== AI GENERATED LEVEL TYPES ==========
 

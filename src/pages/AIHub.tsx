@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
-import { geminiService, EVENT_THEMES } from '../services/geminiService';
+import { groqService, EVENT_THEMES } from '../services/groqService';
 import {
   getCachedAILevel,
   getDailyChallenge,
@@ -16,7 +16,7 @@ import { Timestamp } from 'firebase/firestore';
 import { AVATAR_OPTIONS } from '../constants';
 import { calculateLevel } from '../services/xpSystem';
 import toast from 'react-hot-toast';
-import type { LevelContext, CachedAILevel } from '../types';
+import type { LevelContext, CachedAILevel, AIGeneratedLevel } from '../types';
 import { staggerContainer, staggerItem } from '../animations/variants';
 
 const AI_TOPICS = [
@@ -83,11 +83,11 @@ const AIHub = () => {
 
   const handleGenerate = async (
     type: CachedAILevel['type'],
-    generatorFn: () => Promise<ReturnType<typeof geminiService.generateLevel>>,
+    generatorFn: () => Promise<AIGeneratedLevel>,
     topic?: string
   ) => {
     if (!user || !childId) return;
-    setGenerating(type);
+    setGenerating(type || undefined);
     setError(null);
 
     try {
@@ -134,30 +134,30 @@ const AIHub = () => {
       return;
     }
     const ctx = buildContext();
-    handleGenerate('daily_challenge', () => geminiService.generateDailyChallenge(ctx));
+    handleGenerate('daily_challenge', () => groqService.generateDailyChallenge(ctx));
   };
 
   const handleRevision = () => {
     const ctx = buildContext();
     const weakTopics = activeChild?.weakTopics || ['Child Rights', 'Cyber Safety'];
-    handleGenerate('revision', () => geminiService.generateRevisionQuiz(ctx, weakTopics));
+    handleGenerate('revision', () => groqService.generateRevisionQuiz(ctx, weakTopics));
   };
 
   const handleBonusStory = () => {
     const ctx = buildContext();
     const topic = activeChild?.strongTopics?.[0] || 'Child Rights';
-    handleGenerate('bonus_story', () => geminiService.generateBonusStory(ctx, topic), topic);
+    handleGenerate('bonus_story', () => groqService.generateBonusStory(ctx, topic), topic);
   };
 
   const handlePractice = (topic: string) => {
     const ctx = buildContext();
     setShowTopicPicker(false);
-    handleGenerate('practice', () => geminiService.generatePractice(ctx, topic), topic);
+    handleGenerate('practice', () => groqService.generatePractice(ctx, topic), topic);
   };
 
   const handleEvent = (eventKey: string) => {
     const ctx = buildContext();
-    handleGenerate('event', () => geminiService.generateEventLevel(ctx, eventKey));
+    handleGenerate('event', () => groqService.generateEventLevel(ctx, eventKey));
   };
 
   // Detect current events
@@ -179,7 +179,7 @@ const AIHub = () => {
             AI Adventure Hub
           </h1>
           <p className="font-body text-caption text-on-surface-variant">
-            Fresh AI-generated challenges powered by Gemini
+            Fresh AI-generated challenges powered by Groq
           </p>
         </div>
         <div className="flex items-center gap-2 bg-surface-container-lowest rounded-full px-3 py-1.5 shadow-sm">
@@ -215,7 +215,7 @@ const AIHub = () => {
           <div>
             <p className="font-body text-body-md font-semibold">AI Generation Failed</p>
             <p className="font-body text-caption opacity-80">{error}</p>
-            <p className="font-body text-caption mt-1">Make sure your Gemini API key is set in .env</p>
+            <p className="font-body text-caption mt-1">Make sure your Groq API key is set in .env</p>
           </div>
           <button onClick={() => setError(null)} className="ml-auto">
             <span className="material-symbols-outlined text-sm">close</span>
@@ -335,7 +335,7 @@ const AIHub = () => {
           How AI Adventures Work
         </h3>
         <div className="space-y-2 font-body text-body-sm text-on-surface-variant">
-          <p>🤖 Google Gemini AI creates unique stories and questions just for you</p>
+          <p>🤖 Groq AI creates unique stories and questions just for you</p>
           <p>📚 Every session teaches real Indian laws and safety concepts</p>
           <p>🔄 No two sessions are ever the same</p>
           <p>💾 Your progress is saved — come back anytime to continue</p>

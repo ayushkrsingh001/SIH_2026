@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useForm } from 'react-hook-form';
-import { geminiService } from '../../services/geminiService';
+import { groqService } from '../../services/groqService';
 import { createParentPost } from '../../firebase/firestore';
 import { uploadMedia } from '../../firebase/storage';
+import { COMMUNITY_CATEGORIES } from '../../constants';
+import type { CommunityCategoryId } from '../../types';
 import toast from 'react-hot-toast';
 
 interface CreatePostModalProps {
@@ -12,27 +14,19 @@ interface CreatePostModalProps {
   onClose: () => void;
 }
 
-type PostCat = 'Child Rights' | 'Cyber Safety' | 'Girls Safety' | 'Self Defence' | 'Bullying' | 'Good Touch Bad Touch' | 'Mental Health' | 'Education' | 'Emergency' | 'Road Safety' | 'Consumer Rights' | 'Environmental Awareness' | 'Legal Awareness' | 'Other';
-
 interface PostForm {
   title: string;
   description: string;
-  category: PostCat;
+  category: string;
   isAnonymous: boolean;
   tags: string;
 }
-
-const CATEGORIES: PostCat[] = [
-  'Child Rights', 'Cyber Safety', 'Girls Safety', 'Self Defence',
-  'Bullying', 'Good Touch Bad Touch', 'Mental Health', 'Education',
-  'Emergency', 'Road Safety', 'Consumer Rights', 'Environmental Awareness',
-  'Legal Awareness', 'Other'
-];
 
 export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<CommunityCategoryId>('child_rights');
   const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<PostForm>({
     defaultValues: { isAnonymous: false, category: 'Child Rights' }
   });
@@ -41,7 +35,7 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setMediaFiles(Array.from(e.target.files).slice(0, 3)); // Max 3 files
+      setMediaFiles(Array.from(e.target.files).slice(0, 3));
     }
   };
 
@@ -51,9 +45,10 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
     try {
       const tagsArray = (data.tags || '').split(',').map(t => t.trim()).filter(t => t);
+      const category = COMMUNITY_CATEGORIES.find(c => c.id === selectedCategory);
       
-      // 1. Moderate Content using Gemini
-      const moderation = await geminiService.moderateCommunityPost(data.title, data.description, tagsArray);
+      // 1. Moderate Content using Groq
+      const moderation = await groqService.moderateCommunityPost(data.title, data.description, tagsArray);
       
       if (!moderation.isSafe) {
         toast.error(`Post blocked: ${moderation.reason || 'Violates community guidelines.'}`);
@@ -77,7 +72,7 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
         isAnonymous: data.isAnonymous,
         title: data.title,
         description: data.description,
-        category: data.category,
+        category: category?.label || selectedCategory,
         mediaUrls: uploadedUrls,
         tags: finalTags,
         visibility: 'public'
@@ -86,6 +81,7 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
       toast.success('Post shared successfully!');
       reset();
       setMediaFiles([]);
+      setSelectedCategory('child_rights');
       onClose();
     } catch (error) {
       console.error(error);
@@ -108,10 +104,10 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative bg-surface-container-lowest w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] shadow-elevation-3 p-6 md:p-8 flex flex-col"
+            className="relative bg-surface-container-lowest w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] shadow-card-hover p-6 md:p-8 flex flex-col"
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="font-headline text-headline-sm text-on-surface">Share with Community</h2>
+              <h2 className="font-headline text-headline-md-mobile text-on-surface">Share with Community</h2>
               <button onClick={onClose} disabled={submitting} className="text-on-surface-variant hover:text-on-surface transition-colors">
                 <span className="material-symbols-outlined text-[28px]">close</span>
               </button>
@@ -124,11 +120,38 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                   <span className="material-symbols-outlined text-on-primary-container">person</span>
                 </div>
                 <div className="flex-1">
-                  <p className="font-headline text-title-md text-on-surface">{user?.displayName || 'Parent'}</p>
+                  <p className="font-headline text-label-lg text-on-surface">{user?.displayName || 'Parent'}</p>
                   <label className="flex items-center gap-2 cursor-pointer mt-1">
                     <input type="checkbox" {...register('isAnonymous')} className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" />
                     <span className="font-body text-label-md text-on-surface-variant">Post Anonymously</span>
                   </label>
+                </div>
+              </div>
+
+              {/* Category Picker */}
+              <div>
+                <label className="block font-body text-label-md text-on-surface mb-2">Category</label>
+                <div className="flex flex-wrap gap-2">
+                  {COMMUNITY_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`px-3 py-1.5 rounded-full font-body text-label-md flex items-center gap-1 transition-all ${
+                        selectedCategory === cat.id
+                          ? 'shadow-sm font-semibold'
+                          : 'hover:scale-[1.02]'
+                      }`}
+                      style={{
+                        backgroundColor: selectedCategory === cat.id ? cat.color + '20' : cat.bgAccent,
+                        color: cat.color,
+                        boxShadow: selectedCategory === cat.id ? `0 0 0 2px ${cat.color}40` : undefined,
+                      }}
+                    >
+                      <span>{cat.emoji}</span>
+                      <span>{cat.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -140,16 +163,6 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
                   placeholder="Summarize your post..."
                 />
                 {errors.title && <p className="text-error text-caption mt-1">{errors.title.message}</p>}
-              </div>
-
-              <div>
-                <label className="block font-body text-label-md text-on-surface mb-2">Category</label>
-                <select
-                  {...register('category')}
-                  className="w-full bg-surface-bright border border-outline-variant rounded-xl px-4 py-3 font-body text-body-lg text-on-surface focus:border-primary outline-none"
-                >
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
               </div>
 
               <div>
