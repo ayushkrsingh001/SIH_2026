@@ -37,7 +37,7 @@ const AIMentorWidget = ({ childId }: Props) => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 bg-secondary text-on-secondary w-16 h-16 rounded-full shadow-elevation-3 flex items-center justify-center btn-tactile border-4 border-white"
+        className="fixed bottom-28 md:bottom-6 right-4 md:right-6 z-50 bg-secondary text-on-secondary w-16 h-16 rounded-full shadow-elevation-3 flex items-center justify-center btn-tactile border-4 border-white"
       >
         <span className="material-symbols-outlined text-3xl">psychology</span>
         

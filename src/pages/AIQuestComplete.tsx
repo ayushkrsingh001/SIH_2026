@@ -27,7 +27,7 @@ const AIQuestComplete = () => {
     const loadData = async () => {
       if (!user || !childId || !aiLevelId) return;
       const cached = await getCachedAILevelById(aiLevelId);
-      if (!cached) { navigate(-1); return; }
+      if (!cached) { navigate(`/play/${childId}/ai-hub`); return; }
       setLevel(cached);
 
       // AI Safety Twin Sync (Run async so it doesn't block UI)

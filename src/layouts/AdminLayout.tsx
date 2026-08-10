@@ -24,6 +24,7 @@ export const AdminLayout = () => {
     { path: '/admin/moderation', icon: 'fact_check', label: 'Moderation' },
     { path: '/admin/support-requests', icon: 'support_agent', label: 'Support' },
     { path: '/admin/feedback', icon: 'reviews', label: 'Feedback' },
+    { path: '/admin/help-services', icon: 'local_hospital', label: 'Help Services' },
   ];
 
   const isActive = (path: string, exact?: boolean) =>

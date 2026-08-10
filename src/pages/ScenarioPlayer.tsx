@@ -38,7 +38,7 @@ const ScenarioPlayer = () => {
       if (!moduleId) return;
       
       const mod = allLocalModules.find(m => m.id === moduleId) || null;
-      if (!mod) { navigate(-1); return; }
+      if (!mod) { navigate(`/play/${childId}/map`); return; }
       
       setModule(mod);
 
@@ -59,7 +59,7 @@ const ScenarioPlayer = () => {
         
         if (sceneList.length === 0) { 
           toast.error("Failed to load questions. Please try again.");
-          navigate(-1); 
+          navigate(`/play/${childId}/map`); 
           return; 
         }
 
@@ -71,7 +71,7 @@ const ScenarioPlayer = () => {
       } catch (error) {
         console.error("Error generating dynamic campaign level:", error);
         toast.error("Error loading dynamic level. Please try again.");
-        navigate(-1);
+        navigate(`/play/${childId}/map`);
       } finally {
         setLoading(false);
       }

@@ -71,7 +71,6 @@ const WorldMap = () => {
   const completedCount = progress.filter(p => p.status === 'completed').length;
   
   const { nodes, containerHeight } = generateMapNodes(modules.length);
-  const pathData = generateSvgPath(nodes);
 
   // Find the highest unlocked node to scroll to
   let highestUnlockedIndex = 0;
@@ -87,6 +86,15 @@ const WorldMap = () => {
       previousIndex = idx;
     }
   });
+
+  const fullPathData = generateSvgPath(nodes);
+  
+  // Split path for colored dashed lines (we overlap at the highestUnlockedIndex to connect them smoothly)
+  const completedNodes = nodes.slice(0, highestUnlockedIndex + 1);
+  const upcomingNodes = nodes.slice(highestUnlockedIndex);
+  
+  const completedPathData = generateSvgPath(completedNodes);
+  const upcomingPathData = generateSvgPath(upcomingNodes);
 
   const activeNode = nodes[highestUnlockedIndex];
   const previousNode = previousIndex >= 0 ? nodes[previousIndex] : null;
@@ -118,17 +126,17 @@ const WorldMap = () => {
       }, 100);
     } else if (activeNode) {
       hasScrolledRef.current = true;
-      // Just normal loading, scroll to active node smoothly after brief render delay
+      // Just normal loading, scroll to active node instantly after render delay
       setTimeout(() => {
-        scrollToNode(activeNode, 'smooth');
-      }, 300);
+        scrollToNode(activeNode, 'instant');
+      }, 500);
     }
   }, [activeNode, previousNode, nodes.length, loading, highestUnlockedIndex, previousIndex]);
 
   if (loading) return <PageSkeleton />;
 
   return (
-    <div className="flex flex-col h-full max-h-[85vh]">
+    <div className="flex flex-col h-[calc(100vh-240px)] md:h-[calc(100vh-100px)]">
       {/* Status Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 flex-shrink-0">
         <div className="flex items-center gap-4">
@@ -162,20 +170,18 @@ const WorldMap = () => {
       {/* Scrollable Quest Map */}
       <div 
         ref={scrollContainerRef}
-        className="relative bg-gradient-to-b from-secondary-container/30 via-primary-fixed/20 to-tertiary-fixed/30 rounded-[32px] shadow-inner overflow-y-auto overflow-x-hidden flex-grow"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // hide scrollbar for clean look
+        className="relative w-full max-w-container-max mx-auto overflow-y-auto overflow-x-hidden flex-grow rounded-[32px] shadow-[inset_0_8px_30px_rgba(0,0,0,0.08)] border-8 border-white"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', backgroundColor: '#FFFBF5' }} 
       >
         <div className="relative w-full" style={{ height: `${containerHeight}px` }}>
           
-          {/* Decorative Clouds & Islands (Randomized based on nodes) */}
-          {nodes.map((node, i) => (
-            i % 2 === 0 ? (
-              <div key={`deco-${i}`} className="absolute opacity-40 animate-float" style={{ top: node.yPx, left: node.isLeft ? '80%' : '10%' }}>
-                <span className="material-symbols-outlined text-6xl text-white filled">cloud</span>
-              </div>
-            ) : null
-          ))}
-
+          {/* Animated Background Overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.15] pointer-events-none" 
+            style={{ backgroundImage: 'radial-gradient(#a43c12 2px, transparent 2px)', backgroundSize: '30px 30px' }}
+          ></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-secondary-container/20 via-transparent to-primary-container/10 pointer-events-none animate-pulse-glow"></div>
+          
           {/* Connection Path */}
           <svg 
             className="absolute inset-0 w-full h-full pointer-events-none"
@@ -183,59 +189,37 @@ const WorldMap = () => {
             preserveAspectRatio="none"
           >
             <path
-              d={pathData}
+              className="opacity-50"
+              d={fullPathData}
               fill="none"
-              stroke="#dec0b6" // Path color
-              strokeWidth="20"
+              stroke="#dec0b6" // Background path outline
+              strokeWidth="40"
               strokeLinecap="round"
-              strokeLinejoin="round"
               vectorEffect="non-scaling-stroke"
             />
+            {/* Completed Path (Teal/Green) */}
             <path
-              d={pathData}
+              className="path-line"
+              d={completedPathData}
               fill="none"
-              stroke="#ffffff" // Inner highlight for path
-              strokeWidth="10"
+              stroke="#008080" // Dark Teal for completed
+              strokeWidth="12"
               strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray="16 16"
               vectorEffect="non-scaling-stroke"
             />
+            {/* Upcoming Path (Orange) */}
+            {upcomingNodes.length > 1 && (
+              <path
+                className="path-line"
+                d={upcomingPathData}
+                fill="none"
+                stroke="#ff7f50" // Orange for upcoming
+                strokeWidth="12"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
           </svg>
-
-          {/* World Labels */}
-          {modules.map((mod, idx) => {
-            if (idx % 5 === 0) {
-              const node = nodes[idx];
-              if (!node) return null;
-              const worldNames = [
-                "Child Rights Island",
-                "Cyber Safety Island",
-                "Girls Safety Island",
-                "Self Defence Island",
-                "Emergency Response Island",
-                "Environmental Awareness Island",
-                "Legal Hero Island"
-              ];
-              const worldIndex = Math.floor(idx / 5);
-              const worldName = worldNames[worldIndex] || `World ${worldIndex + 1}`;
-              
-              return (
-                <div 
-                  key={`world-${worldIndex}`} 
-                  className="absolute w-full flex flex-col items-center justify-center pointer-events-none"
-                  style={{ top: node.yPx + 100 }}
-                >
-                  <div className="bg-surface/80 backdrop-blur-sm px-6 py-2 rounded-full border-2 border-surface-dim shadow-sm">
-                    <span className="font-headline text-title-lg font-bold text-on-surface text-center">
-                      World {worldIndex + 1}: {worldName}
-                    </span>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          })}
 
           {/* Module Nodes */}
           {modules.map((mod, idx) => {
@@ -244,87 +228,80 @@ const WorldMap = () => {
             if (!node) return null;
 
             const isLocked = status === 'locked';
-            const isCompleted = status === 'completed';
-            const isAvailable = status === 'available' || status === 'in_progress';
-            const isBoss = mod.isBoss; 
-            const isMysteryBox = (idx + 1) % 5 === 0 && !isBoss;
-
-            // Colors based on status
-            let btnColor = 'bg-primary-container';
-            let borderColor = 'border-primary';
-            let iconColor = 'text-on-primary-container';
-            
-            if (isLocked) {
-              btnColor = 'bg-surface-dim';
-              borderColor = 'border-surface-container-high';
-              iconColor = 'text-outline';
-            } else if (isCompleted) {
-              btnColor = 'bg-secondary';
-              borderColor = 'border-secondary-fixed';
-              iconColor = 'text-on-secondary';
-            } else if (isBoss) {
-              btnColor = 'bg-error-container';
-              borderColor = 'border-error';
-              iconColor = 'text-error';
-            } else if (isMysteryBox) {
-              btnColor = 'bg-tertiary-container';
-              borderColor = 'border-tertiary';
-              iconColor = 'text-tertiary';
-            }
+            const isAvailable = idx === highestUnlockedIndex;
+            const isCompleted = status === 'completed' || (!isAvailable && !isLocked);
 
             const iconMap: Record<number, string> = {
-              0: 'menu_book', 1: 'sports_esports', 2: 'factory',
+              0: 'child_care', 1: 'family_restroom', 2: 'security',
               3: 'devices', 4: 'record_voice_over',
             };
+            const iconName = iconMap[idx % 5] || 'explore';
 
             return (
               <div
                 key={mod.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${node.xPercent}%`, top: node.yPx }}
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-auto group ${isLocked ? 'cursor-not-allowed opacity-70 grayscale' : 'cursor-pointer'}`}
+                style={{ left: `${node.xPercent}%`, top: node.yPx, zIndex: isAvailable ? 20 : 10 }}
+                onClick={() => !isLocked && navigate(`/play/${childId}/module/${mod.id}`)}
               >
-                <div className="relative group flex flex-col items-center">
-                  {/* Floating Title (shows on hover or if it's the current node) */}
-                  <div className={`mb-3 px-4 py-2 rounded-2xl text-center min-w-[140px] shadow-md transition-opacity duration-300 ${isAvailable ? 'opacity-100 bg-surface' : 'opacity-0 group-hover:opacity-100 bg-surface-container-high'}`}>
-                     <span className={`font-headline text-label-md font-bold block ${isLocked ? 'text-outline' : 'text-on-surface'}`}>
-                       Level {idx + 1}
-                     </span>
-                     <span className={`font-body text-caption block truncate ${isLocked ? 'text-outline' : 'text-on-surface-variant'}`}>
-                       {mod.title}
-                     </span>
-                  </div>
+                {isCompleted && !isAvailable && (
+                  <>
+                    <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-secondary-container rounded-2xl floating-shadow flex flex-col items-center justify-center border-2 border-secondary transition-transform group-hover:-translate-y-2 group-hover:active-shadow z-10">
+                        <span className="material-symbols-outlined text-3xl md:text-4xl text-secondary mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
+                        <div className="bg-secondary text-on-secondary font-caption px-2 py-0.5 rounded-full text-[8px] uppercase font-bold tracking-wider absolute -bottom-2">Completed</div>
+                      </div>
+                      {/* Decorative elements */}
+                      <div className="absolute -right-2 top-2 w-4 h-4 bg-white rounded-full opacity-60"></div>
+                      <div className="absolute -left-1 bottom-4 w-3 h-3 bg-white rounded-full opacity-60"></div>
+                    </div>
+                    <div className="text-center mt-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/40 shadow-sm mx-auto min-w-[110px] max-w-[130px]">
+                      <h3 className="font-headline font-semibold text-on-surface text-xs md:text-sm leading-tight">{mod.title}</h3>
+                      <div className="flex justify-center gap-1 mt-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                  <motion.button
-                    onClick={() => !isLocked && navigate(`/play/${childId}/module/${mod.id}`)}
-                    disabled={isLocked}
-                    className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full ${btnColor} border-b-[8px] border-x-[4px] border-t-[2px] ${borderColor} flex items-center justify-center shadow-lg transition-transform ${isLocked ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:-translate-y-2 active:translate-y-0 active:border-b-[2px]'}`}
-                    whileHover={!isLocked ? { scale: 1.05 } : undefined}
-                    whileTap={!isLocked ? { scale: 0.95 } : undefined}
-                  >
-                    {isLocked ? (
-                      <span className={`material-symbols-outlined text-4xl ${iconColor}`}>lock</span>
-                    ) : isCompleted ? (
-                      <span className={`material-symbols-outlined text-4xl ${iconColor} filled`}>star</span>
-                    ) : isBoss ? (
-                      <span className={`material-symbols-outlined text-4xl ${iconColor} filled animate-pulse`}>swords</span>
-                    ) : isMysteryBox ? (
-                      <span className={`material-symbols-outlined text-4xl ${iconColor} filled animate-bounce`}>redeem</span>
-                    ) : (
-                      <span className={`material-symbols-outlined text-4xl ${iconColor} filled`}>{iconMap[idx % 5] || 'play_arrow'}</span>
-                    )}
-                  </motion.button>
-                  
-                  {/* Avatar jumping on the current available level */}
-                  {isAvailable && (
-                    <motion.div 
-                      className="absolute -top-12 z-20 pointer-events-none"
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <img src={avatar.imageUrl} alt="You are here" className="w-16 h-16 object-contain drop-shadow-xl" />
-                    </motion.div>
-                  )}
-                </div>
+                {isAvailable && (
+                  <>
+                    <div className="relative w-28 h-28 md:w-32 md:h-32 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-primary-container opacity-20 rounded-full animate-ping"></div>
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-2xl active-shadow flex flex-col items-center justify-center border-4 border-primary-container relative z-10 tactile-button group-hover:-translate-y-2">
+                        <span className="material-symbols-outlined text-4xl md:text-5xl text-primary mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
+                        <div className="w-3/4 h-2 bg-surface-container-high rounded-full overflow-hidden mt-1 border border-outline-variant">
+                          <div className="h-full bg-primary-container rounded-full w-[40%]"></div>
+                        </div>
+                      </div>
+                      <div className="absolute -top-8 -right-4 w-16 h-16 z-30 animate-bounce" style={{ animationDuration: '2s' }}>
+                        <img alt="Mascot Avatar on current quest" className="w-full h-full object-contain filter drop-shadow-lg" src={avatar.imageUrl} />
+                      </div>
+                    </div>
+                    <div className="text-center mt-3 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-primary-container shadow-md mx-auto min-w-[140px] max-w-[170px] transform transition-transform hover:scale-105">
+                      <h3 className="font-headline font-bold text-primary text-sm md:text-base leading-tight drop-shadow-sm">{mod.title}</h3>
+                      <div className="font-body font-bold text-secondary text-[10px] uppercase tracking-wider mt-1">Level {idx + 1} of {modules.length}</div>
+                    </div>
+                  </>
+                )}
+
+                {isLocked && (
+                  <>
+                    <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-surface-container-high rounded-2xl floating-shadow flex flex-col items-center justify-center border-2 border-outline-variant z-10">
+                        <span className="material-symbols-outlined text-3xl md:text-4xl text-on-surface-variant mb-1">lock</span>
+                      </div>
+                    </div>
+                    <div className="text-center mt-2 bg-surface/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-outline-variant/30 shadow-sm mx-auto min-w-[110px] max-w-[130px]">
+                      <h3 className="font-headline font-medium text-on-surface-variant text-xs md:text-sm leading-tight">{mod.title}</h3>
+                      <div className="font-body text-outline text-[10px] uppercase tracking-wider mt-1 flex items-center justify-center gap-1">
+                        <span className="material-symbols-outlined text-[12px]">lock</span> Locked
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}

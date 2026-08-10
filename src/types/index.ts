@@ -903,3 +903,23 @@ export interface AIReport {
   aiRecommendationText: string;
   createdAt: Timestamp;
 }
+
+// ========== HELP SERVICES TYPES ==========
+
+export interface HelpService {
+  id?: string;
+  organizationName: string;
+  category: string;
+  state: string;
+  district: string;
+  city: string;
+  address: string;
+  phone: string;
+  website: string;
+  latitude: number;
+  longitude: number;
+  source: string;
+  verificationStatus: 'Official' | 'Verified' | 'Needs Verification';
+  lastVerifiedAt: Timestamp | null;
+  createdAt: Timestamp;
+}

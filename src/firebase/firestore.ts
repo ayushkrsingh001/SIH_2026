@@ -33,7 +33,11 @@ import type {
   DailyChallengeStreak,
   SafetyTwinProfile,
   LearningEvent,
-  AIReport
+  AIReport,
+  HelpService,
+  Organization,
+  Feedback,
+  Certificate
 } from '../types';
 
 // ========== PARENTS ==========
@@ -657,5 +661,33 @@ export const deleteAIReport = async (parentId: string, childId: string, reportId
   const childRef = doc(db, 'parents', parentId, 'children', childId);
   const updatedReports = child.aiReports.filter((r: any) => r.id !== reportId);
   await updateDoc(childRef, { aiReports: updatedReports });
+};
+
+// ========== HELP SERVICES ==========
+
+export const getHelpServices = async (): Promise<HelpService[]> => {
+  const snapshot = await getDocs(collection(db, 'help_services'));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as HelpService));
+};
+
+export const getHelpServicesByState = async (state: string): Promise<HelpService[]> => {
+  const snapshot = await getDocs(query(collection(db, 'help_services'), where('state', '==', state)));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as HelpService));
+};
+
+export const addHelpService = async (service: Omit<HelpService, 'id' | 'createdAt'>): Promise<string> => {
+  const ref = await addDoc(collection(db, 'help_services'), {
+    ...service,
+    createdAt: serverTimestamp()
+  });
+  return ref.id;
+};
+
+export const updateHelpService = async (serviceId: string, data: Partial<HelpService>): Promise<void> => {
+  await updateDoc(doc(db, 'help_services', serviceId), data);
+};
+
+export const deleteHelpService = async (serviceId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'help_services', serviceId));
 };
 

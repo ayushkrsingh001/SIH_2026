@@ -2,6 +2,7 @@ import Groq from 'groq-sdk';
 import type { AIGeneratedLevel, LevelContext, SafetyTwinProfile, LearningEvent, AIReport } from '../types';
 
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
 const SYSTEM_INSTRUCTION = `You are an educational game content generator for "RightsQuest", an Indian legal awareness game for children aged 8-16.
 
@@ -147,27 +148,75 @@ class GroqLevelGenerator {
     } else {
       cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
     }
+    
+    // Fix trailing commas which break JSON.parse
+    cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
+    
     // Replace all literal newlines with spaces to prevent JSON.parse from failing on unescaped newlines in strings
     return cleaned.replace(/\n/g, ' ').replace(/\r/g, '');
   }
 
-  private async callGroq(userPrompt: string, retries = 2, expectedType: 'level' | 'json_object' = 'level'): Promise<any> {
+  private async _executeGroqCall(systemPrompt: string, userPrompt: string): Promise<string> {
     const client = this.getClient();
+    const response = await client.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 4096,
+      response_format: { type: 'json_object' }
+    });
+    return response.choices[0]?.message?.content || '{}';
+  }
+
+  private async _executeOpenRouterCall(systemPrompt: string, userPrompt: string): Promise<string> {
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('VITE_OPENROUTER_API_KEY is not set. OpenRouter fallback is unavailable.');
+    }
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.1-8b-instruct',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`OpenRouter Error ${res.status}: ${errText}`);
+    }
+    const data = await res.json();
+    return data.choices[0]?.message?.content || '{}';
+  }
+
+  private async callGroq(userPrompt: string, retries = 3, expectedType: 'level' | 'json_object' = 'level'): Promise<any> {
+    const systemPrompt = expectedType === 'level' ? SYSTEM_INSTRUCTION : 'You are a helpful AI assistant. Return ONLY valid JSON.';
+    
+    let lastError: any = null;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await client.chat.completions.create({
-          model: 'llama-3.1-8b-instant',
-          messages: [
-            { role: 'system', content: expectedType === 'level' ? SYSTEM_INSTRUCTION : 'You are a helpful AI assistant. Return ONLY valid JSON.' },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 4096,
-          response_format: { type: 'json_object' }
-        });
-
-        const text = response.choices[0]?.message?.content || '{}';
+        // Alternate providers: Even attempts try Groq, Odd attempts try OpenRouter
+        const useGroq = attempt % 2 === 0;
+        
+        let text = '';
+        if (useGroq) {
+          console.log(`[AI Engine] Attempt ${attempt + 1}: Generating via Groq...`);
+          text = await this._executeGroqCall(systemPrompt, userPrompt);
+        } else {
+          console.log(`[AI Engine] Attempt ${attempt + 1}: Generating via OpenRouter (Fallback)...`);
+          text = await this._executeOpenRouterCall(systemPrompt, userPrompt);
+        }
         
         // Parse and validate
         const parsed = JSON.parse(this.cleanJson(text));
@@ -176,15 +225,19 @@ class GroqLevelGenerator {
         }
         return parsed;
       } catch (err) {
-        console.error(`Groq attempt ${attempt + 1} failed:`, err);
+        lastError = err;
+        console.warn(`[AI Engine] Attempt ${attempt + 1} failed:`, err);
+        
         if (attempt === retries) {
-          throw new Error(`Failed to generate after ${retries + 1} attempts: ${err}`);
+          throw new Error(`Failed to generate after ${retries + 1} attempts. Last error: ${err}`);
         }
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        
+        // Short delay before retrying with the other provider
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
-    throw new Error('Unreachable');
+    
+    throw lastError;
   }
 
   private validateLevel(level: AIGeneratedLevel): void {
@@ -198,8 +251,19 @@ class GroqLevelGenerator {
       if (!q.question || !q.correctAnswer || !q.explanation) {
         throw new Error('Invalid question: missing required fields');
       }
-      if (q.type === 'mcq' && (!q.options || q.options.length < 2)) {
-        throw new Error('MCQ question must have at least 2 options');
+      
+      // Ensure all types except true_false have valid options
+      if (q.type !== 'true_false') {
+        if (!q.options || !Array.isArray(q.options) || q.options.length < 2) {
+           // If missing options, try to auto-generate a fallback array
+           q.options = [q.correctAnswer, "I don't know", "Ignore it", "Ask for help"];
+        }
+        
+        // Ensure correctAnswer is exactly one of the options
+        if (!q.options.includes(q.correctAnswer)) {
+          // Replace a random option (or the first one) with the correct answer
+          q.options[0] = q.correctAnswer;
+        }
       }
     }
     if (!level.reward) {
@@ -670,7 +734,10 @@ OUTPUT EXACT JSON:
       const client = this.getClient();
       const response = await client.chat.completions.create({
         model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'user', content: finalPrompt }],
+        messages: [
+          { role: 'system', content: 'You are a helpful AI assistant. Return ONLY valid JSON.' },
+          { role: 'user', content: finalPrompt }
+        ],
         temperature: 0.3,
         response_format: { type: 'json_object' }
       });
@@ -723,7 +790,10 @@ OUTPUT EXACT JSON:
       const client = this.getClient();
       const response = await client.chat.completions.create({
         model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: 'You are a helpful AI assistant. Return ONLY valid JSON.' },
+          { role: 'user', content: prompt }
+        ],
         temperature: 0.2,
         response_format: { type: 'json_object' }
       });
@@ -772,7 +842,10 @@ OUTPUT EXACT JSON:
       const client = this.getClient();
       const response = await client.chat.completions.create({
         model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: 'You are a helpful AI assistant. Return ONLY valid JSON.' },
+          { role: 'user', content: prompt }
+        ],
         temperature: 0.3,
         response_format: { type: 'json_object' }
       });

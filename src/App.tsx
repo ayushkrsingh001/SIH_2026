@@ -43,9 +43,11 @@ const ModuleManager = lazy(() => import('./pages/admin/ModuleManager'));
 const ModerationQueue = lazy(() => import('./pages/admin/ModerationQueue'));
 const SupportRequests = lazy(() => import('./pages/admin/SupportRequests'));
 const FeedbackTable = lazy(() => import('./pages/admin/FeedbackTable'));
+const HelpServicesManager = lazy(() => import('./pages/admin/HelpServicesManager'));
+const NeedHelp = lazy(() => import('./pages/NeedHelp'));
 
 const PageLoader = () => (
-  <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+  <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] animate-pulse-glow pointer-events-none" />
     <div className="relative z-10 flex flex-col items-center gap-6">
@@ -91,6 +93,7 @@ const AnimatedRoutes = () => {
           <Route path="map" element={<WorldMap />} />
           <Route path="progress" element={<ChildProgress />} />
           <Route path="get-help" element={<GetHelp />} />
+          <Route path="need-help" element={<NeedHelp />} />
           <Route path="store" element={<Store />} />
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="multiplayer" element={<MultiplayerLobby />} />
@@ -110,6 +113,7 @@ const AnimatedRoutes = () => {
           <Route path="moderation" element={<ModerationQueue />} />
           <Route path="support-requests" element={<SupportRequests />} />
           <Route path="feedback" element={<FeedbackTable />} />
+          <Route path="help-services" element={<HelpServicesManager />} />
         </Route>
 
         {/* 404 */}

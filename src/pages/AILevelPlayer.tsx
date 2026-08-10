@@ -30,12 +30,12 @@ const AILevelPlayer = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!aiLevelId) { navigate(-1); return; }
+      if (!aiLevelId) { navigate(`/play/${childId}/ai-hub`); return; }
 
       const cached = await getCachedAILevelById(aiLevelId);
       if (!cached) {
         toast.error('AI level not found');
-        navigate(-1);
+        navigate(`/play/${childId}/ai-hub`);
         return;
       }
 

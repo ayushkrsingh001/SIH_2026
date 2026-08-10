@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChild } from '../contexts/ChildContext';
@@ -11,6 +12,7 @@ export const ChildLayout = () => {
   const navigate = useNavigate();
   const { childId } = useParams();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const avatarUrl = resolveAvatarUrl(activeChild?.avatarId);
   const levelInfo = calculateLevel(activeChild?.xp || 0);
@@ -23,12 +25,13 @@ export const ChildLayout = () => {
     { path: `/play/${childId}/store`, icon: 'storefront', label: 'Store' },
     { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: 'Ranks' },
     { path: `/play/${childId}/multiplayer`, icon: 'swords', label: 'Battle' },
+    { path: `/play/${childId}/need-help`, icon: 'sos', label: 'Need Help' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#FDFBF7] font-body flex flex-col">
+    <div className="min-h-screen relative overflow-x-hidden bg-[#FDFBF7] font-body flex flex-col">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none animate-float" />
       <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-tertiary/5 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
@@ -69,18 +72,6 @@ export const ChildLayout = () => {
 
           {/* Actions Section */}
           <div className="flex items-center gap-3">
-            {/* Get Help Button - Always Visible */}
-            <motion.button
-              onClick={() => navigate(`/play/${childId}/get-help`)}
-              className="bg-error text-on-error px-4 py-2 rounded-full font-body text-label-md flex items-center gap-1 btn-tactile border-on-error-container"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Get Help"
-            >
-              <span className="material-symbols-outlined text-[18px]">emergency</span>
-              <span className="hidden sm:inline">Get Help</span>
-            </motion.button>
-
             {/* Child Avatar */}
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container bg-cream">
@@ -116,22 +107,64 @@ export const ChildLayout = () => {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-surface rounded-t-xl shadow-nav">
-        {navItems.map(item => (
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-white/80 backdrop-blur-xl rounded-t-xl shadow-nav border-t border-outline-variant">
+        {navItems.slice(0, 4).map(item => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center justify-center px-4 py-2 rounded-xl transition-all ${
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`flex flex-col items-center justify-center min-w-[64px] px-1 py-2 rounded-xl transition-all ${
               isActive(item.path)
                 ? 'bg-primary-container text-on-primary-container border-b-4 border-on-primary-fixed-variant scale-95'
                 : 'text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
             <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''}`}>{item.icon}</span>
-            <span className="font-body text-label-md mt-1">{item.label}</span>
+            <span className="font-body text-[10px] sm:text-xs mt-1 text-center leading-tight whitespace-nowrap">{item.label}</span>
           </Link>
         ))}
+        
+        {/* More Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className={`flex flex-col items-center justify-center min-w-[64px] px-1 py-2 rounded-xl transition-all ${
+            isMobileMenuOpen
+              ? 'bg-secondary-container text-on-secondary-container border-b-4 border-on-secondary-fixed-variant scale-95'
+              : 'text-on-surface-variant hover:bg-surface-container-high'
+          }`}
+        >
+          <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'more_horiz'}</span>
+          <span className="font-body text-[10px] sm:text-xs mt-1 text-center leading-tight">More</span>
+        </button>
       </nav>
+
+      {/* Mobile More Menu Popup */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="md:hidden fixed bottom-[80px] right-2 left-2 z-40 bg-surface-container-lowest rounded-2xl shadow-elevation-4 border border-outline-variant p-4 grid grid-cols-3 sm:grid-cols-4 gap-3"
+          >
+            {navItems.slice(4).map(item => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
+                  isActive(item.path)
+                    ? 'bg-primary-container text-on-primary-container'
+                    : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                <span className={`material-symbols-outlined text-2xl ${isActive(item.path) ? 'filled text-primary' : ''}`}>{item.icon}</span>
+                <span className="font-body text-xs mt-2 text-center leading-tight">{item.label}</span>
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Bottom padding for mobile nav */}
       <div className="h-20 md:hidden" />

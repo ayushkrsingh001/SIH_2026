@@ -7,7 +7,7 @@ export interface MapNode {
 
 export const generateMapNodes = (
   count: number,
-  nodeSpacingPx: number = 160,
+  nodeSpacingPx: number = 220,
   bottomPaddingPx: number = 200,
   amplitudePercent: number = 25
 ): { nodes: MapNode[]; containerHeight: number } => {

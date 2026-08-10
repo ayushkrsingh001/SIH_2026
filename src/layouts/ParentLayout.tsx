@@ -127,7 +127,7 @@ export const ParentLayout = () => {
 
   if (!pinVerified) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-[#FDFBF7] font-body flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen relative overflow-x-hidden bg-[#FDFBF7] font-body flex flex-col items-center justify-center p-4">
         <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none animate-float" />
         <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-tertiary/5 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
         
@@ -179,7 +179,7 @@ export const ParentLayout = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#FDFBF7] font-body flex flex-col md:flex-row">
+    <div className="min-h-screen relative overflow-x-hidden bg-[#FDFBF7] font-body flex flex-col md:flex-row">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none animate-float" />
       <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-tertiary/5 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" />
@@ -192,7 +192,7 @@ export const ParentLayout = () => {
       <header className="md:hidden sticky top-0 z-50 bg-white/70 backdrop-blur-xl shadow-sm border-b border-outline-variant">
         <div className="flex justify-between items-center w-full px-4 py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back">
+            <button onClick={() => navigate('/play')} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back">
               <span className="material-symbols-outlined text-[20px]">arrow_back</span>
             </button>
             <Link to="/dashboard" className="font-headline text-headline-md-mobile font-extrabold text-primary">
@@ -210,7 +210,7 @@ export const ParentLayout = () => {
       {/* Desktop Sidebar */}
       <nav className="hidden md:flex bg-white/70 backdrop-blur-xl shadow-lg border-r border-outline-variant fixed left-0 top-0 h-full w-64 z-40 flex-col py-6">
         <div className="px-6 mb-8 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back">
+          <button onClick={() => navigate('/play')} className="text-on-surface-variant hover:text-primary transition-colors flex items-center bg-surface-container-high rounded-full p-2" aria-label="Go Back">
             <span className="material-symbols-outlined text-[20px]">arrow_back</span>
           </button>
           <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
@@ -274,7 +274,7 @@ export const ParentLayout = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow relative z-10 w-full md:w-[calc(100%-16rem)] max-w-container-max mx-auto px-4 md:px-gutter py-8 md:py-12 md:ml-64">
+      <main className="flex-grow relative z-10 w-full md:w-[calc(100%-16rem)] max-w-container-max mx-auto px-4 md:px-gutter py-8 pb-32 md:py-12 md:pb-8 md:ml-64">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

@@ -21,7 +21,7 @@ const Login = () => {
     try {
       await loginWithEmail(data.email, data.password);
       toast.success('Welcome back!');
-      navigate('/play');
+      navigate('/play', { replace: true });
     } catch {
       toast.error('Invalid email or password.');
     } finally {
@@ -34,7 +34,7 @@ const Login = () => {
     try {
       await loginWithGoogle();
       toast.success('Welcome back!');
-      navigate('/play');
+      navigate('/play', { replace: true });
     } catch {
       toast.error('Google sign-in failed.');
     } finally {

@@ -102,6 +102,34 @@
   .material-symbols-outlined.filled {
     font-variation-settings: 'FILL' 1;
   }
+
+  .floating-shadow {
+    box-shadow: 0px 4px 20px rgba(255, 127, 80, 0.08);
+  }
+  
+  .active-shadow {
+    box-shadow: 0px 8px 30px rgba(255, 127, 80, 0.15);
+  }
+
+  .tactile-button {
+    border-bottom: 4px solid rgba(0,0,0,0.15);
+    transition: all 0.1s ease;
+  }
+  
+  .tactile-button:active {
+    transform: translateY(2px);
+    border-bottom-width: 0px;
+    margin-bottom: 4px;
+  }
+
+  .path-line {
+    stroke-dasharray: 20, 20;
+    animation: dash 30s linear infinite;
+  }
+  
+  @keyframes dash {
+    to { stroke-dashoffset: -1000; }
+  }
 }
 
 @layer utilities {

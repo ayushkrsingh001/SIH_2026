@@ -45,7 +45,7 @@ const QuestComplete = () => {
         activeChild ? Promise.resolve(activeChild) : getChild(user.uid, childId),
       ]);
 
-      if (!mod) { navigate(-1); return; }
+      if (!mod) { navigate(`/play/${childId}/map`); return; }
       setModule(mod);
       setScore(progressData?.score || 0);
       setXpEarned(mod.xpReward);
