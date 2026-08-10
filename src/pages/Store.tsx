@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
 import { updateChild } from '../firebase/firestore';
-import { AVATAR_OPTIONS } from '../constants';
+import { AVATAR_OPTIONS, PREMIUM_AVATARS } from '../constants';
+import { resolveAvatarUrl } from '../utils/avatar';
 import { staggerItem, bounceIn } from '../animations/variants';
 import toast from 'react-hot-toast';
 
@@ -13,12 +14,16 @@ const TITLES = [
   { id: 't3', name: 'Rights Defender', cost: 250 },
   { id: 't4', name: 'Justice Knight', cost: 500 },
   { id: 't5', name: 'Grand Protector', cost: 1000 },
-];
-
-const PREMIUM_AVATARS = [
-  { id: 'pa1', name: 'Super Hero', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Hero&backgroundColor=FFD166', cost: 200 },
-  { id: 'pa2', name: 'Ninja', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Ninja&backgroundColor=EF476F', cost: 300 },
-  { id: 'pa3', name: 'Wizard', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Wizard&backgroundColor=118AB2', cost: 500 },
+  { id: 't6', name: 'Cyber Guardian', cost: 150 },
+  { id: 't7', name: 'Peace Maker', cost: 200 },
+  { id: 't8', name: 'Truth Seeker', cost: 300 },
+  { id: 't9', name: 'Brave Heart', cost: 400 },
+  { id: 't10', name: 'Kindness Captain', cost: 600 },
+  { id: 't11', name: 'Wisdom Master', cost: 750 },
+  { id: 't12', name: 'Hero of Justice', cost: 1200 },
+  { id: 't13', name: 'Legendary Shield', cost: 1500 },
+  { id: 't14', name: 'Supreme Champion', cost: 2000 },
+  { id: 't15', name: 'Mythical Guardian', cost: 3000 },
 ];
 
 const Store = () => {
@@ -26,6 +31,8 @@ const Store = () => {
   const { activeChild, setActiveChild } = useChild();
   const [tab, setTab] = useState<'avatars' | 'titles'>('avatars');
   const [purchasing, setPurchasing] = useState(false);
+  const [customStyle, setCustomStyle] = useState('bottts');
+  const [customSeed, setCustomSeed] = useState('Explorer');
 
   if (!activeChild || !user) return null;
 
@@ -132,6 +139,43 @@ const Store = () => {
         >
           {tab === 'avatars' ? (
             <div>
+              <div className="bg-surface-container-lowest rounded-[32px] p-6 shadow-card mb-10 border border-outline-variant/30">
+                <h2 className="font-headline text-title-lg text-on-surface mb-4">Create Custom Avatar</h2>
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary bg-cream shrink-0 shadow-sm">
+                     <img src={`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}&backgroundColor=b6e3f4`} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-grow space-y-4 w-full">
+                     <div className="flex flex-col sm:flex-row gap-4">
+                       <select 
+                         value={customStyle} 
+                         onChange={e => setCustomStyle(e.target.value)}
+                         className="p-4 rounded-xl border-2 border-surface-dim bg-surface-bright font-body text-body-md focus:border-primary outline-none"
+                       >
+                         <option value="bottts">Robots</option>
+                         <option value="adventurer">Adventurer</option>
+                         <option value="fun-emoji">Emoji</option>
+                         <option value="avataaars">People</option>
+                       </select>
+                       <input 
+                         type="text" 
+                         value={customSeed}
+                         onChange={e => setCustomSeed(e.target.value)}
+                         className="flex-grow p-4 rounded-xl border-2 border-surface-dim bg-surface-bright font-body text-body-md focus:border-primary outline-none"
+                         placeholder="Type a name..."
+                       />
+                     </div>
+                     <button 
+                       disabled={purchasing || activeChild.coins < 100}
+                       onClick={() => handlePurchaseAvatar(`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}&backgroundColor=b6e3f4`, 100)}
+                       className="bg-primary text-on-primary px-6 py-4 rounded-full font-headline text-title-md w-full disabled:opacity-50 btn-tactile border-b-4 border-on-primary-fixed-variant"
+                     >
+                       Unlock & Equip Custom Avatar (100 Coins)
+                     </button>
+                  </div>
+                </div>
+              </div>
+
               <h2 className="font-headline text-title-lg text-on-surface mb-4">Premium Avatars</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                 {PREMIUM_AVATARS.map(avatar => {
@@ -139,9 +183,9 @@ const Store = () => {
                   const isEquipped = activeChild.avatarId === avatar.id;
                   
                   return (
-                    <motion.div key={avatar.id} variants={staggerItem} className="bg-surface-container-lowest rounded-[24px] p-6 shadow-card flex flex-col items-center text-center relative overflow-hidden group">
+                    <motion.div key={avatar.id} variants={staggerItem} className="bg-surface-container-lowest rounded-[24px] p-6 shadow-card flex flex-col items-center text-center relative overflow-hidden group border border-outline-variant/30">
                       <div className={`w-24 h-24 rounded-full overflow-hidden border-4 mb-4 ${isEquipped ? 'border-secondary' : 'border-surface-dim'} bg-cream`}>
-                        <img src={avatar.imageUrl} alt={avatar.name} className="w-full h-full object-cover" />
+                        <img src={resolveAvatarUrl(avatar.imageUrl)} alt={avatar.name} className="w-full h-full object-cover" />
                       </div>
                       <h3 className="font-headline text-title-md text-on-surface mb-2">{avatar.name}</h3>
                       
@@ -169,9 +213,9 @@ const Store = () => {
                 {AVATAR_OPTIONS.map(avatar => {
                   const isEquipped = activeChild.avatarId === avatar.id;
                   return (
-                    <button key={avatar.id} onClick={() => handleEquipAvatar(avatar.id)} className={`flex flex-col items-center gap-2 p-3 rounded-[24px] transition-all ${isEquipped ? 'bg-secondary-container/20 border-2 border-secondary scale-105' : 'bg-surface-container-lowest border-2 border-transparent hover:border-outline-variant shadow-sm'}`}>
+                    <button key={avatar.id} onClick={() => handleEquipAvatar(avatar.id)} className={`flex flex-col items-center gap-2 p-3 rounded-[24px] transition-all ${isEquipped ? 'bg-secondary-container/20 border-2 border-secondary scale-105' : 'bg-surface-container-lowest border border-outline-variant/30 hover:border-outline shadow-sm'}`}>
                       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-dim">
-                        <img src={avatar.imageUrl} alt={avatar.name} className="w-full h-full object-cover" />
+                        <img src={resolveAvatarUrl(avatar.imageUrl)} alt={avatar.name} className="w-full h-full object-cover" />
                       </div>
                       <span className="font-body text-caption text-on-surface">{avatar.name}</span>
                     </button>

@@ -1,8 +1,10 @@
 import { Outlet, Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChild } from '../contexts/ChildContext';
-import { MASCOT_SMALL_URL, AVATAR_OPTIONS } from '../constants';
+import { MASCOT_SMALL_URL } from '../constants';
+import { resolveAvatarUrl } from '../utils/avatar';
 import { calculateLevel } from '../services/xpSystem';
+import AIMentorWidget from '../components/ui/AIMentorWidget';
 
 export const ChildLayout = () => {
   const { activeChild } = useChild();
@@ -10,10 +12,12 @@ export const ChildLayout = () => {
   const { childId } = useParams();
   const location = useLocation();
 
-  const avatar = AVATAR_OPTIONS.find(a => a.id === activeChild?.avatarId) || AVATAR_OPTIONS[0];
+  const avatarUrl = resolveAvatarUrl(activeChild?.avatarId);
   const levelInfo = calculateLevel(activeChild?.xp || 0);
 
   const navItems = [
+    { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: 'Daily Quiz' },
+    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: 'Report Incident' },
     { path: `/play/${childId}/map`, icon: 'map', label: 'Map' },
     { path: `/play/${childId}/progress`, icon: 'emoji_events', label: 'Progress' },
     { path: `/play/${childId}/store`, icon: 'storefront', label: 'Store' },
@@ -79,8 +83,8 @@ export const ChildLayout = () => {
 
             {/* Child Avatar */}
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container">
-                <img src={avatar.imageUrl} alt={activeChild?.displayName || 'Player'} className="w-full h-full object-cover" />
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container bg-cream">
+                <img src={avatarUrl} alt={activeChild?.displayName || 'Player'} className="w-full h-full object-cover" />
               </div>
               <div className="hidden sm:block">
                 <p className="font-body text-label-md text-on-surface leading-tight">{activeChild?.displayName}</p>
@@ -131,6 +135,8 @@ export const ChildLayout = () => {
 
       {/* Bottom padding for mobile nav */}
       <div className="h-20 md:hidden" />
+
+      {childId && <AIMentorWidget childId={childId} />}
     </div>
   );
 };

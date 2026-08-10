@@ -34,6 +34,10 @@ export interface Child {
   achievements?: string[];
   weakTopics?: string[];
   strongTopics?: string[];
+  // AI Safety Twin Data (stored on Child doc to bypass nested subcollection rules)
+  safetyTwinProfile?: SafetyTwinProfile;
+  learningEvents?: LearningEvent[];
+  aiReports?: AIReport[];
 }
 
 export interface Module {
@@ -59,6 +63,26 @@ export interface Choice {
   feedbackText: string;
   nextSceneId: string | null;
   educationalTip?: string; // specific learning takeaway
+}
+
+export interface CertificateData {
+  title: string; // e.g. "Cyber Hero"
+  description: string;
+  learningSummary: string;
+  skillsLearned: string[];
+  encouragement: string;
+  nextGoal: string;
+}
+
+export interface Certificate {
+  id?: string;
+  childId: string;
+  parentId: string;
+  type: string; // "World Completion", "100 Quizzes", "Boss Defeated"
+  issueDate: Timestamp;
+  certificateNumber: string;
+  worldName?: string;
+  aiContent: CertificateData;
 }
 
 export interface DangerZone {
@@ -224,7 +248,7 @@ export interface Notification {
   actorId: string; // The user who did the action
   actorName: string;
   actorPhoto?: string;
-  type: 'like' | 'comment' | 'mention' | 'share';
+  type: 'like' | 'comment' | 'mention' | 'share' | 'help_request';
   postId: string;
   read: boolean;
   createdAt: Timestamp;
@@ -748,3 +772,134 @@ export const XP_LEVELS: { level: number; minXp: number; title: string }[] = [
   { level: 12, minXp: 7500, title: 'Grandmaster' },
   { level: 13, minXp: 10000, title: 'Legend' },
 ];
+
+// ========== SAFETY ASSESSMENT TYPES ==========
+
+export interface TopicScore {
+  topicId: string;
+  topicName: string;
+  score: number; // 0-100
+  accuracy: number;
+  totalAttempted: number;
+  completedModules: number;
+}
+
+export type RiskLevel = 'high' | 'medium' | 'low';
+
+export interface RiskIndicator {
+  id: string;
+  description: string;
+  priority: RiskLevel;
+  relatedTopic: string;
+}
+
+export interface AIRecommendation {
+  id: string;
+  action: string;
+  targetId?: string; // e.g. moduleId
+  type: 'play_level' | 'read_story' | 'practice_quiz';
+}
+
+export interface SafetyAssessment {
+  id?: string;
+  childId: string;
+  parentId: string;
+  overallScore: number;
+  topicScores: TopicScore[];
+  strongTopics: string[];
+  weakTopics: string[];
+  riskIndicators: RiskIndicator[];
+  insights: string[];
+  recommendations: AIRecommendation[];
+  generatedAt: Timestamp;
+}
+
+// ========== INCIDENT REPORTING ==========
+export type IncidentRiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type IncidentStatus = 'pending' | 'resolved' | 'closed';
+
+export interface IncidentReport {
+  id?: string;
+  parentId: string;
+  initialConcern: string;
+  chatHistory: { question: string; answer: string }[];
+  status: IncidentStatus;
+  
+  // AI Generated fields
+  summary: string;
+  riskLevel: IncidentRiskLevel;
+  immediateSteps: string[];
+  dosAndDonts: {
+    dos: string[];
+    donts: string[];
+  };
+  mentalHealthAdvice: string;
+  officialReportingOptions: string[];
+  governmentResources: string[];
+  emergencyNumbers: string[];
+  recommendedMissions: string[];
+  
+  evidenceUrls?: string[]; // Array of simulated local object URLs or real storage URLs
+  createdAt: Timestamp;
+}
+
+// ========== DAILY CHALLENGE TYPES ==========
+export interface DailyChallengeStreak {
+  id?: string;
+  childId: string;
+  parentId: string;
+  currentStreak: number;
+  highestStreak: number;
+  lastCompletedDate: Timestamp | null;
+  totalCompleted: number;
+}
+
+// ========== AI SAFETY TWIN TYPES ==========
+
+export interface SafetyTwinProfile {
+  id?: string;
+  childId: string;
+  parentId: string;
+  overallScore: number;
+  categoryScores: {
+    cyberSafety: number;
+    childRights: number;
+    girlsSafety: number;
+    selfDefence: number;
+    emergencyAwareness: number;
+    digitalPrivacy: number;
+    bullyingAwareness: number;
+    roadSafety: number;
+  };
+  learningStyle: 'story' | 'quiz' | 'mixed';
+  strengthAreas: string[];
+  weakAreas: string[];
+  recommendedDifficulty: 'Easy' | 'Medium' | 'Hard';
+  lastAnalyzedAt: Timestamp;
+}
+
+export interface LearningEvent {
+  id?: string;
+  childId: string;
+  parentId: string;
+  activityType: 'module' | 'ai_quiz' | 'incident_report';
+  topic: string;
+  score: number;
+  mistakes: string[];
+  timeSpent: number; // in seconds
+  createdAt: Timestamp;
+}
+
+export interface AIReport {
+  id?: string;
+  childId: string;
+  parentId: string;
+  weekStartDate: Timestamp;
+  learningTimeMinutes: number;
+  completedMissions: number;
+  improvementText: string;
+  strongestTopic: string;
+  needsAttentionTopic: string;
+  aiRecommendationText: string;
+  createdAt: Timestamp;
+}

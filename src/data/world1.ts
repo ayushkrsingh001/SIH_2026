@@ -12,14 +12,19 @@ export const createChoiceScene = (
 export const createSpotDangerScene = (
   text: string, scenario: string, dangerZones: { id: string; x: number; y: number; radius: number; description: string }[],
   educationalTip: string, legalInfo: string
-): Omit<Scene, 'id' | 'moduleId'> => ({
-  type: 'spot_danger', text, scenario, mediaUrl: '/assets/danger_bg.jpg', 
-  choices: [
-    { text: "Found the danger", isCorrect: true, feedbackText: "Great job spotting the danger! Always be observant.", nextSceneId: null },
-    { text: "Missed", isCorrect: false, feedbackText: "That's not the danger zone. Try to look closer!", nextSceneId: null }
-  ],
-  dangerZones, educationalTip, relatedLegalInfo: legalInfo,
-});
+): Omit<Scene, 'id' | 'moduleId'> => {
+  const dangerDesc = dangerZones[0]?.description || "The hidden danger";
+  return {
+    type: 'choice', text: `Analyze the situation: ${text}`, scenario, mediaUrl: null,
+    choices: [
+      { text: dangerDesc, isCorrect: true, feedbackText: "Exactly! You identified the core issue.", nextSceneId: null },
+      { text: "Everything seems safe", isCorrect: false, feedbackText: "Look closer! There is a hidden danger here.", nextSceneId: null },
+      { text: "No immediate threat", isCorrect: false, feedbackText: "That's incorrect. There is a risk present.", nextSceneId: null },
+      { text: "Ignore the situation", isCorrect: false, feedbackText: "Never ignore potential dangers.", nextSceneId: null }
+    ],
+    educationalTip, relatedLegalInfo: legalInfo,
+  };
+};
 
 export const createOrderScene = (
   text: string, scenario: string, sequence: { id: string; text: string; correctOrder: number }[],

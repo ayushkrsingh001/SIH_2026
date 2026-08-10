@@ -8,6 +8,7 @@ import { ProtectedRoute, AdminRoute, PublicRoute } from './components/RouteGuard
 import { ParentLayout } from './layouts/ParentLayout';
 import { ChildLayout } from './layouts/ChildLayout';
 import { AdminLayout } from './layouts/AdminLayout';
+import { MASCOT_URL } from './constants';
 
 // Pages (lazy loaded for code splitting)
 import { lazy, Suspense } from 'react';
@@ -32,6 +33,9 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const AIHub = lazy(() => import('./pages/AIHub'));
 const AILevelPlayer = lazy(() => import('./pages/AILevelPlayer'));
 const AIQuestComplete = lazy(() => import('./pages/AIQuestComplete'));
+const IncidentAssistant = lazy(() => import('./pages/IncidentAssistant'));
+const DailyQuizPage = lazy(() => import('./pages/DailyQuizPage'));
+const AISafetyTwinDashboard = lazy(() => import('./pages/Parent/AISafetyTwinDashboard'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -48,7 +52,7 @@ const PageLoader = () => (
       <div className="relative w-24 h-24">
         <div className="absolute inset-0 border-4 border-primary/30 rounded-full" />
         <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <img src="/mascot.png" alt="Loading..." className="absolute inset-0 w-full h-full object-contain p-4 animate-pulse" />
+        <img src={MASCOT_URL} alt="Loading..." className="absolute inset-0 w-full h-full object-contain p-4 animate-pulse" />
       </div>
       <p className="font-headline text-title-lg text-primary animate-pulse tracking-wide">Preparing your adventure...</p>
     </div>
@@ -72,7 +76,9 @@ const AnimatedRoutes = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/add-child" element={<AddChild />} />
           <Route path="/dashboard/edit-child/:childId" element={<AddChild />} />
+          <Route path="/dashboard/safety-twin/:childId" element={<AISafetyTwinDashboard />} />
           <Route path="/community" element={<Community />} />
+          <Route path="/incident-assistant" element={<IncidentAssistant />} />
         </Route>
 
         {/* Who's Playing */}
@@ -80,6 +86,8 @@ const AnimatedRoutes = () => {
 
         {/* Child Mode Routes */}
         <Route path="/play/:childId" element={<ProtectedRoute><ChildLayout /></ProtectedRoute>}>
+          <Route path="daily-quiz" element={<DailyQuizPage />} />
+          <Route path="incident-assistant" element={<IncidentAssistant />} />
           <Route path="map" element={<WorldMap />} />
           <Route path="progress" element={<ChildProgress />} />
           <Route path="get-help" element={<GetHelp />} />

@@ -14,7 +14,8 @@ import {
   collectionGroup,
   limit,
   onSnapshot,
-  increment
+  increment,
+  arrayUnion
 } from 'firebase/firestore';
 import { db } from './config';
 import type {
@@ -25,7 +26,14 @@ import type {
   PostLike,
   PostBookmark,
   PostReport,
-  Notification as AppNotification
+  Notification as AppNotification,
+  SafetyAssessment,
+  IncidentReport,
+  IncidentStatus,
+  DailyChallengeStreak,
+  SafetyTwinProfile,
+  LearningEvent,
+  AIReport
 } from '../types';
 
 // ========== PARENTS ==========
@@ -297,13 +305,22 @@ export const reportPost = async (report: Omit<PostReport, 'id' | 'createdAt' | '
 export const subscribeToNotifications = (userId: string, callback: (notifications: AppNotification[]) => void) => {
   const q = query(
     collection(db, 'notifications'),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc'),
-    limit(20)
+    where('userId', '==', userId)
   );
   return onSnapshot(q, (snapshot) => {
     const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppNotification));
-    callback(notifications);
+    
+    // Sort client-side to avoid composite index requirements
+    notifications.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+    
+    callback(notifications.slice(0, 20));
+  }, (error) => {
+    console.error('Notifications subscription error:', error);
+    callback([]);
   });
 };
 
@@ -432,5 +449,213 @@ export const getCompletedAILevels = async (
     )
   );
   return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as CachedAILevel));
+};
+
+export const getTodayDailyChallenge = async (childId: string): Promise<CachedAILevel | null> => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+
+  const q = query(
+    collection(db, 'aiLevelCache'),
+    where('childId', '==', childId),
+    where('type', '==', 'daily_challenge'),
+    where('generatedAt', '>=', Timestamp.fromDate(today)),
+    orderBy('generatedAt', 'desc'),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as CachedAILevel;
+};
+
+// ========== AI ASSESSMENTS (Child Safety Analytics) ==========
+export const saveSafetyAssessment = async (assessment: SafetyAssessment): Promise<string> => {
+  const docRef = await addDoc(collection(db, 'childAssessment'), {
+    ...assessment,
+    generatedAt: serverTimestamp(),
+  });
+  return docRef.id;
+};
+
+export const getLatestAssessment = async (childId: string): Promise<SafetyAssessment | null> => {
+  const q = query(
+    collection(db, 'childAssessment'),
+    where('childId', '==', childId),
+    orderBy('generatedAt', 'desc'),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as SafetyAssessment;
+};
+
+export const getAssessmentHistory = async (childId: string): Promise<SafetyAssessment[]> => {
+  const q = query(
+    collection(db, 'childAssessment'),
+    where('childId', '==', childId),
+    orderBy('generatedAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SafetyAssessment));
+};
+
+// ========== INCIDENT REPORTING ==========
+export const saveIncidentReport = async (report: Omit<IncidentReport, 'id' | 'createdAt'>): Promise<string> => {
+  const docRef = await addDoc(collection(db, 'incidentReports'), {
+    ...report,
+    createdAt: serverTimestamp(),
+  });
+  return docRef.id;
+};
+
+export const getIncidentReports = async (parentId: string): Promise<IncidentReport[]> => {
+  const q = query(
+    collection(db, 'incidentReports'),
+    where('parentId', '==', parentId)
+  );
+  const snapshot = await getDocs(q);
+  const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as IncidentReport));
+  
+  return reports.sort((a, b) => {
+    const timeA = a.createdAt?.seconds || 0;
+    const timeB = b.createdAt?.seconds || 0;
+    return timeB - timeA;
+  });
+};
+
+export const updateIncidentStatus = async (reportId: string, status: IncidentStatus): Promise<void> => {
+  await updateDoc(doc(db, 'incidentReports', reportId), { status });
+};
+
+// ========== DAILY CHALLENGE STREAKS ==========
+export const getDailyChallengeStreak = async (childId: string): Promise<DailyChallengeStreak | null> => {
+  const q = query(collection(db, 'challengeStreaks'), where('childId', '==', childId), limit(1));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as DailyChallengeStreak;
+};
+
+export const updateDailyChallengeStreak = async (childId: string, parentId: string): Promise<number> => {
+  const streak = await getDailyChallengeStreak(childId);
+  const now = new Date();
+  
+  if (!streak) {
+    await addDoc(collection(db, 'challengeStreaks'), {
+      childId,
+      parentId,
+      currentStreak: 1,
+      highestStreak: 1,
+      lastCompletedDate: serverTimestamp(),
+      totalCompleted: 1
+    });
+    return 1;
+  }
+
+  // Check if it was completed today already (prevent double counting)
+  if (streak.lastCompletedDate) {
+    const lastDate = streak.lastCompletedDate.toDate();
+    if (lastDate.toDateString() === now.toDateString()) {
+      return streak.currentStreak;
+    }
+    
+    // Check if missed a day
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    let newStreak = streak.currentStreak + 1;
+    if (lastDate.toDateString() !== yesterday.toDateString()) {
+      newStreak = 1; // Reset streak
+    }
+
+    await updateDoc(doc(db, 'challengeStreaks', streak.id!), {
+      currentStreak: newStreak,
+      highestStreak: Math.max(streak.highestStreak, newStreak),
+      lastCompletedDate: serverTimestamp(),
+      totalCompleted: increment(1)
+    });
+    return newStreak;
+  }
+  return 1;
+};
+
+// ========== CERTIFICATES ==========
+
+export const saveCertificate = async (cert: Omit<Certificate, 'id'>): Promise<string> => {
+  const ref = await addDoc(collection(db, 'certificates'), cert);
+  return ref.id;
+};
+
+export const getChildCertificates = async (childId: string): Promise<Certificate[]> => {
+  const snapshot = await getDocs(
+    query(
+      collection(db, 'certificates'),
+      where('childId', '==', childId)
+    )
+  );
+  return snapshot.docs
+    .map(d => ({ id: d.id, ...d.data() } as Certificate))
+    .sort((a, b) => b.issueDate.toMillis() - a.issueDate.toMillis());
+};
+
+export const getAllParentCertificates = async (parentId: string): Promise<Certificate[]> => {
+  const snapshot = await getDocs(
+    query(
+      collection(db, 'certificates'),
+      where('parentId', '==', parentId)
+    )
+  );
+  return snapshot.docs
+    .map(d => ({ id: d.id, ...d.data() } as Certificate))
+    .sort((a, b) => b.issueDate.toMillis() - a.issueDate.toMillis());
+};
+
+export const getCertificateById = async (id: string): Promise<Certificate | null> => {
+  const snap = await getDoc(doc(db, 'certificates', id));
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Certificate) : null;
+};
+
+// ========== AI SAFETY TWIN ==========
+
+export const getSafetyTwinProfile = async (parentId: string, childId: string): Promise<SafetyTwinProfile | null> => {
+  const child = await getChild(parentId, childId);
+  return child?.safetyTwinProfile || null;
+};
+
+export const saveSafetyTwinProfile = async (profile: SafetyTwinProfile) => {
+  await updateChild(profile.parentId, profile.childId, { safetyTwinProfile: profile });
+};
+
+export const addLearningEvent = async (event: Omit<LearningEvent, 'id' | 'createdAt'>) => {
+  const childRef = doc(db, 'parents', event.parentId, 'children', event.childId);
+  await updateDoc(childRef, {
+    learningEvents: arrayUnion({ ...event, id: crypto.randomUUID(), createdAt: Date.now() })
+  });
+};
+
+export const getLearningHistory = async (parentId: string, childId: string): Promise<LearningEvent[]> => {
+  const child = await getChild(parentId, childId);
+  const events = child?.learningEvents || [];
+  return events.sort((a, b) => ((b.createdAt as any) || 0) - ((a.createdAt as any) || 0));
+};
+
+export const getAIReports = async (parentId: string, childId: string): Promise<AIReport[]> => {
+  const child = await getChild(parentId, childId);
+  const reports = child?.aiReports || [];
+  return reports.sort((a, b) => ((b.createdAt as any) || 0) - ((a.createdAt as any) || 0));
+};
+
+export const addAIReport = async (report: Omit<AIReport, 'id' | 'createdAt'>) => {
+  const childRef = doc(db, 'parents', report.parentId, 'children', report.childId);
+  await updateDoc(childRef, {
+    aiReports: arrayUnion({ ...report, id: crypto.randomUUID(), createdAt: Date.now() })
+  });
+};
+
+export const deleteAIReport = async (parentId: string, childId: string, reportId: string) => {
+  const child = await getChild(parentId, childId);
+  if (!child || !child.aiReports) return;
+  const childRef = doc(db, 'parents', parentId, 'children', childId);
+  const updatedReports = child.aiReports.filter((r: any) => r.id !== reportId);
+  await updateDoc(childRef, { aiReports: updatedReports });
 };
 

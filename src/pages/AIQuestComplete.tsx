@@ -3,7 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
-import { getCachedAILevelById } from '../firebase/firestore';
+import { 
+  getCachedAILevelById, addLearningEvent, getLearningHistory, 
+  getSafetyTwinProfile, saveSafetyTwinProfile 
+} from '../firebase/firestore';
+import { groqService } from '../services/groqService';
+import toast from 'react-hot-toast';
 import { calculateLevel } from '../services/xpSystem';
 import { AVATAR_OPTIONS } from '../constants';
 import { celebrationVariants, staggerContainer, staggerItem } from '../animations/variants';
@@ -20,14 +25,47 @@ const AIQuestComplete = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!aiLevelId) { navigate(-1); return; }
+      if (!user || !childId || !aiLevelId) return;
       const cached = await getCachedAILevelById(aiLevelId);
       if (!cached) { navigate(-1); return; }
       setLevel(cached);
+
+      // AI Safety Twin Sync (Run async so it doesn't block UI)
+      setTimeout(async () => {
+        try {
+          await addLearningEvent({
+            childId,
+            parentId: user.uid,
+            activityType: 'ai_level',
+            topic: cached.levelData.learningObjective || 'General',
+            score: cached.score || 0,
+            mistakes: [], // AI levels don't track detailed mistakes yet
+            timeSpent: cached.timeSpent || 120,
+          });
+
+          // Check if we need to sync Twin (e.g. every completion)
+          const history = await getLearningHistory(user.uid, childId);
+          const profile = await getSafetyTwinProfile(user.uid, childId);
+          
+          const updatedProfileData = await groqService.analyzeLearningHistory(history.slice(0, 5), profile);
+          
+          const newProfile: any = {
+            ...(profile || { childId, parentId: user.uid }),
+            ...updatedProfileData,
+          };
+          
+          await saveSafetyTwinProfile(newProfile);
+          toast.success("AI Safety Twin updated!");
+        } catch (e: any) {
+          console.error("AI Twin Sync Error:", e);
+          toast.error(`AI Safety Twin update failed: ${e.message || e}`);
+        }
+      }, 0);
+
       setLoading(false);
     };
     loadData();
-  }, [aiLevelId, navigate]);
+  }, [user, childId, aiLevelId, navigate]);
 
   const avatar = AVATAR_OPTIONS.find(a => a.id === activeChild?.avatarId) || AVATAR_OPTIONS[0];
   const levelInfo = activeChild ? calculateLevel(activeChild.xp || 0) : { level: 1, title: 'Beginner' };
@@ -55,7 +93,7 @@ const AIQuestComplete = () => {
         </motion.div>
       </div>
 
-      {/* Trophy */}
+      {/* Trophy or Chest */}
       <motion.div
         variants={celebrationVariants}
         initial="initial"
@@ -63,7 +101,9 @@ const AIQuestComplete = () => {
         className="mb-6"
       >
         <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-card-hover">
-          <span className="material-symbols-outlined text-6xl text-white filled">auto_awesome</span>
+          <span className="material-symbols-outlined text-6xl text-white filled">
+            {level.type === 'daily_challenge' ? 'redeem' : 'auto_awesome'}
+          </span>
         </div>
       </motion.div>
 
@@ -73,7 +113,7 @@ const AIQuestComplete = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        AI Quest Complete!
+        {level.type === 'daily_challenge' ? 'Daily Challenge Complete!' : 'AI Quest Complete!'}
       </motion.h1>
 
       <motion.p
@@ -183,23 +223,37 @@ const AIQuestComplete = () => {
 
       {/* Actions */}
       <div className="space-y-3">
-        <motion.button
-          onClick={() => navigate(`/play/${childId}/ai-hub`, { replace: true })}
-          className="w-full h-14 bg-primary-container text-on-primary-container font-headline text-title-lg rounded-full btn-tactile-primary flex items-center justify-center gap-2"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <span className="material-symbols-outlined filled">auto_awesome</span>
-          More AI Adventures
-        </motion.button>
+        {level.type === 'daily_challenge' ? (
+          <motion.button
+            onClick={() => navigate(`/play/${childId}/map`, { replace: true })}
+            className="w-full h-14 bg-primary-container text-on-primary-container font-headline text-title-lg rounded-full btn-tactile-primary flex items-center justify-center gap-2"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="material-symbols-outlined filled">play_arrow</span>
+            Play Games
+          </motion.button>
+        ) : (
+          <>
+            <motion.button
+              onClick={() => navigate(`/play/${childId}/ai-hub`, { replace: true })}
+              className="w-full h-14 bg-primary-container text-on-primary-container font-headline text-title-lg rounded-full btn-tactile-primary flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="material-symbols-outlined filled">auto_awesome</span>
+              More AI Adventures
+            </motion.button>
 
-        <button
-          onClick={() => navigate(`/play/${childId}/map`, { replace: true })}
-          className="w-full h-12 text-primary font-body text-label-md hover:bg-primary-fixed/10 rounded-full transition-colors flex items-center justify-center gap-2"
-        >
-          <span className="material-symbols-outlined text-sm">map</span>
-          Back to Quest Map
-        </button>
+            <button
+              onClick={() => navigate(`/play/${childId}/map`, { replace: true })}
+              className="w-full h-12 text-primary font-body text-label-md hover:bg-primary-fixed/10 rounded-full transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">map</span>
+              Back to Map
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

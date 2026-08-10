@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
-import { getCachedAILevelById, updateCachedAILevel, updateChild } from '../firebase/firestore';
+import { getCachedAILevelById, updateCachedAILevel, updateChild, updateDailyChallengeStreak } from '../firebase/firestore';
 import { transformAILevelToScenes } from '../services/aiLevelTransformer';
 import { Timestamp } from 'firebase/firestore';
 import { MASCOT_SMALL_URL } from '../constants';
@@ -69,11 +69,21 @@ const AILevelPlayer = () => {
       const reward = cachedLevel.levelData.reward;
       const newXp = (activeChild.xp || 0) + reward.xp;
       const newCoins = (activeChild.coins || 0) + reward.coins;
+      const newCompletedCount = (activeChild.completedLevelsCount || 0) + 1;
+      
       await updateChild(user.uid, childId, {
         xp: newXp,
         coins: newCoins,
+        completedLevelsCount: newCompletedCount,
         lastActive: Timestamp.now(),
       });
+
+      // Update local state for triggers in the next screen
+      activeChild.completedLevelsCount = newCompletedCount;
+
+      if (cachedLevel.type === 'daily_challenge') {
+        await updateDailyChallengeStreak(childId, user.uid);
+      }
     }
   }, [user, childId, aiLevelId, cachedLevel, totalChoices, correctChoices, activeChild]);
 

@@ -6,8 +6,9 @@ import { useChild } from '../contexts/ChildContext';
 import { getChildren, updateChild } from '../firebase/firestore';
 import { verifyPin } from '../utils';
 import { calculateStreak } from '../services/streakSystem';
-import { AVATAR_OPTIONS, MASCOT_URL } from '../constants';
 import { calculateLevel } from '../services/xpSystem';
+import { resolveAvatarUrl } from '../utils/avatar';
+import { MASCOT_URL } from '../constants';
 import { PinInput } from '../components/ui/PinInput';
 import { CardSkeleton } from '../components/ui/SkeletonLoader';
 import type { Child } from '../types';
@@ -61,7 +62,7 @@ const WhosPlaying = () => {
     setVerifying(false);
   };
 
-  const getAvatar = (avatarId: string) => AVATAR_OPTIONS.find(a => a.id === avatarId) || AVATAR_OPTIONS[0];
+  const getAvatarUrl = (avatarId?: string) => resolveAvatarUrl(avatarId);
 
   if (loading) {
     return (
@@ -152,7 +153,7 @@ const WhosPlaying = () => {
               </motion.button>
 
               {children.map((child, index) => {
-                const avatar = getAvatar(child.avatarId);
+                const avatarUrl = getAvatarUrl(child.avatarId);
                 const levelInfo = calculateLevel(child.xp);
                 return (
                   <motion.button
@@ -171,7 +172,7 @@ const WhosPlaying = () => {
                     <div className="relative z-10 mb-4">
                       <div className="absolute inset-0 bg-primary/20 rounded-full blur-md scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-md group-hover:border-primary-container transition-colors duration-300 bg-surface-container-high">
-                        <img src={avatar.imageUrl} alt={child.displayName} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
+                        <img src={avatarUrl} alt={child.displayName} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 bg-cream" />
                       </div>
                       
                       {/* Level Badge */}
@@ -202,7 +203,7 @@ const WhosPlaying = () => {
               <div className="relative w-28 h-28 mx-auto mb-6">
                 <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse" />
                 <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-surface-container-high">
-                  <img src={getAvatar(selectedChild.avatarId).imageUrl} alt={selectedChild.displayName} className="w-full h-full object-cover" />
+                  <img src={getAvatarUrl(selectedChild.avatarId)} alt={selectedChild.displayName} className="w-full h-full object-cover bg-cream" />
                 </div>
               </div>
               

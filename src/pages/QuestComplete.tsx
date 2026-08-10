@@ -3,7 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
-import { getModule, getProgress, getBadges, getChild, getAllChildProgress, updateChild } from '../firebase/firestore';
+import { 
+  getModule, getProgress, getBadges, getChild, getAllChildProgress, updateChild,
+  addLearningEvent, getLearningHistory, getSafetyTwinProfile, saveSafetyTwinProfile
+} from '../firebase/firestore';
+import { groqService } from '../services/groqService';
 import { getNewlyEarnedBadges } from '../services/badgeSystem';
 import { calculateLevel } from '../services/xpSystem';
 import { AVATAR_OPTIONS } from '../constants';
@@ -12,6 +16,7 @@ import { addFeedback } from '../firebase/firestore';
 import { celebrationVariants, bounceIn, staggerContainer, staggerItem } from '../animations/variants';
 import toast from 'react-hot-toast';
 import type { Module, Badge } from '../types';
+import { allLocalModules } from '../data';
 
 const QuestComplete = () => {
   const { user } = useAuth();
@@ -33,7 +38,7 @@ const QuestComplete = () => {
       if (!user || !childId || !moduleId) return;
 
       const [mod, progressData, allBadges, allProgress, child] = await Promise.all([
-        getModule(moduleId),
+        Promise.resolve(allLocalModules.find(m => m.id === moduleId) || null),
         getProgress(user.uid, childId, moduleId),
         getBadges(),
         getAllChildProgress(user.uid, childId),
@@ -51,10 +56,50 @@ const QuestComplete = () => {
         const earnedBadges = getNewlyEarnedBadges(allBadges, allProgress, child.badgeIds || []);
         setNewBadges(earnedBadges);
 
+        const newCompletedCount = (child.completedLevelsCount || 0) + 1;
+        const updates: any = { completedLevelsCount: newCompletedCount };
+        
         if (earnedBadges.length > 0) {
-          const newBadgeIds = [...(child.badgeIds || []), ...earnedBadges.map(b => b.id!)];
-          await updateChild(user.uid, childId, { badgeIds: newBadgeIds });
+          updates.badgeIds = [...(child.badgeIds || []), ...earnedBadges.map(b => b.id!)];
         }
+        
+        await updateChild(user.uid, childId, updates);
+        
+        // Update local state so trigger has fresh data
+        child.completedLevelsCount = newCompletedCount;
+        if (updates.badgeIds) child.badgeIds = updates.badgeIds;
+
+        // AI Safety Twin Sync (Run async so it doesn't block UI)
+        setTimeout(async () => {
+          try {
+            await addLearningEvent({
+              childId,
+              parentId: user.uid,
+              activityType: 'module',
+              topic: mod.category || 'General',
+              score: progressData?.score || 0,
+              mistakes: [], // Modules don't track detailed mistakes yet
+              timeSpent: progressData?.timeSpent || 120, // default 2 mins if not tracked
+            });
+
+            // Check if we need to sync Twin (e.g. every completion)
+            const history = await getLearningHistory(user.uid, childId);
+            const profile = await getSafetyTwinProfile(user.uid, childId);
+            
+            const updatedProfileData = await groqService.analyzeLearningHistory(history.slice(0, 5), profile);
+            
+            const newProfile: any = {
+              ...(profile || { childId, parentId: user.uid }),
+              ...updatedProfileData,
+            };
+            
+            await saveSafetyTwinProfile(newProfile);
+            toast.success("AI Safety Twin updated!");
+          } catch (e: any) {
+            console.error("AI Twin Sync Error:", e);
+            toast.error(`AI Safety Twin update failed: ${e.message || e}`);
+          }
+        }, 0);
       }
 
       setLoading(false);

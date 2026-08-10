@@ -6,7 +6,7 @@ import { auth } from '../firebase/config';
 import { MASCOT_SMALL_URL } from '../constants';
 import { useChild } from '../contexts/ChildContext';
 import { useEffect, useState } from 'react';
-import { getParent, updateParent } from '../firebase/firestore';
+import { getParent, updateParent, subscribeToNotifications } from '../firebase/firestore';
 
 const pageVariants = {
   initial: { opacity: 0, y: 15 },
@@ -26,6 +26,15 @@ export const ParentLayout = () => {
   const [pinInput, setPinInput] = useState('');
   const [error, setError] = useState('');
   const [expectedPin, setExpectedPin] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsubscribe = subscribeToNotifications(user.uid, (data) => {
+      setUnreadCount(data.filter(n => !n.read).length);
+    });
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   useEffect(() => {
     setActiveChild(null);
@@ -100,7 +109,10 @@ export const ParentLayout = () => {
 
   const navItems = [
     { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+    { path: '/incident-assistant', icon: 'report', label: 'Incident Assistant' },
     { path: '/community', icon: 'forum', label: 'Community' },
+    { path: '/notifications', icon: 'notifications', label: 'Notifications', badge: unreadCount },
+    { path: '/settings', icon: 'settings', label: 'Settings' },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);
@@ -221,7 +233,15 @@ export const ParentLayout = () => {
                     : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
-                <span className="material-symbols-outlined">{item.icon}</span>
+                <div className="relative">
+                  <span className="material-symbols-outlined">{item.icon}</span>
+                  {item.badge ? (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-error border-2 border-surface"></span>
+                    </span>
+                  ) : null}
+                </div>
                 <span className="font-body text-body-md font-semibold">{item.label}</span>
               </Link>
             </li>
@@ -281,7 +301,15 @@ export const ParentLayout = () => {
                 : 'text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
-            <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''}`}>{item.icon}</span>
+            <div className="relative">
+              <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''}`}>{item.icon}</span>
+              {item.badge ? (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-error border-2 border-surface"></span>
+                </span>
+              ) : null}
+            </div>
             <span className="font-body text-label-md mt-1">{item.label}</span>
           </Link>
         ))}

@@ -6,6 +6,13 @@ export const MASCOT_SMALL_URL = 'https://lh3.googleusercontent.com/aida-public/A
 
 export const GOOGLE_LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYgXejh7myx13sm5G0IKsJq_0L8BcV2fE7FxiAVnBcX7J6MMkJFsFQ0NOQVc_ljTrNoX6BeZxg5TAvbfWHFk4vH_aaf8cGYvPweSoJcyz2kfaJw5Al2tQro3x8Th47mW4uQLLkRmuISi8rtj2q1fQivDUbEIHfaUc2ltoNWNcmNkOM1RqE2aP_0CFlvVSdUHmgZJKOZHLqnPhhY2rrkbR-YUvysXN2jdUF5t1evv561c9elZrw0_BU';
 
+export interface PremiumAvatar {
+  id: string;
+  name: string;
+  imageUrl: string;
+  cost: number;
+}
+
 export const AVATAR_OPTIONS: AvatarOption[] = [
   {
     id: 'avatar-leo',
@@ -37,6 +44,49 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
     name: 'Ravi',
     imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1ZmeXLk4158yLc0DlO9XVVGGeCPFVrQ_qppOAoqhgzeYGbUmO3M85s90rrvJyhadOK4muMuZZpLdeDQ29v4RuVCTsC5qyZH0X7ABMwv9gg0PS2CqMtWyTFH-JCLpogDiAwKYl8X1C5E_SH4DgAEdJEOy6S6AOn5KGDMsrDH_xCWmouK2rJc_8Mw1lot0wfM7H16AFhplWUjplNuBwEu8Tec98ZQxuSHZ6POBnyjw1oNzj-6Y9yo1Y',
   },
+  {
+    id: 'avatar-zara',
+    name: 'Zara',
+    imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Zara&backgroundColor=ffd5dc',
+  },
+  {
+    id: 'avatar-kai',
+    name: 'Kai',
+    imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kai&backgroundColor=d1d4f9',
+  },
+  {
+    id: 'avatar-mia',
+    name: 'Mia',
+    imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia&backgroundColor=ffdfbf',
+  },
+  {
+    id: 'avatar-jay',
+    name: 'Jay',
+    imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jay&backgroundColor=c0aede',
+  },
+];
+
+export const PREMIUM_AVATARS: PremiumAvatar[] = [
+  { id: 'pa1', name: 'Super Hero', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Hero&backgroundColor=FFD166', cost: 200 },
+  { id: 'pa2', name: 'Ninja', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Ninja&backgroundColor=EF476F', cost: 300 },
+  { id: 'pa3', name: 'Wizard', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Wizard&backgroundColor=118AB2', cost: 500 },
+  { id: 'pa4', name: 'Astronaut', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Astro&backgroundColor=06D6A0', cost: 200 },
+  { id: 'pa5', name: 'Pirate', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Pirate&backgroundColor=EF476F', cost: 250 },
+  { id: 'pa6', name: 'King', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=King&backgroundColor=FFD166', cost: 400 },
+  { id: 'pa7', name: 'Queen', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Queen&backgroundColor=118AB2', cost: 400 },
+  { id: 'pa8', name: 'Knight', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Knight&backgroundColor=06D6A0', cost: 350 },
+  { id: 'pa9', name: 'Dragon', imageUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Dragon&backgroundColor=EF476F', cost: 500 },
+  { id: 'pa10', name: 'Unicorn', imageUrl: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Unicorn&backgroundColor=118AB2', cost: 500 },
+  { id: 'pa11', name: 'Detective', imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Detective&backgroundColor=06D6A0', cost: 300 },
+  { id: 'pa12', name: 'Explorer', imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Explore&backgroundColor=FFD166', cost: 200 },
+  { id: 'pa13', name: 'Chef', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chef&backgroundColor=EF476F', cost: 150 },
+  { id: 'pa14', name: 'Pilot', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Pilot&backgroundColor=118AB2', cost: 250 },
+  { id: 'pa15', name: 'Doctor', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Doc&backgroundColor=06D6A0', cost: 300 },
+  { id: 'pa16', name: 'Artist', imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Artist&backgroundColor=FFD166', cost: 200 },
+  { id: 'pa17', name: 'Musician', imageUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Music&backgroundColor=EF476F', cost: 200 },
+  { id: 'pa18', name: 'Athlete', imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sport&backgroundColor=118AB2', cost: 150 },
+  { id: 'pa19', name: 'Scientist', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Science&backgroundColor=06D6A0', cost: 400 },
+  { id: 'pa20', name: 'Magician', imageUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Magic&backgroundColor=FFD166', cost: 450 },
 ];
 
 export const HELP_CATEGORIES = [

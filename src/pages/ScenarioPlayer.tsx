@@ -8,7 +8,10 @@ import { Timestamp } from 'firebase/firestore';
 import { MASCOT_SMALL_URL } from '../constants';
 import { PageSkeleton } from '../components/ui/SkeletonLoader';
 import type { Scene, Module, Progress, Choice, DangerZone } from '../types';
-import { allLocalModules, getLocalScenes } from '../data';
+import { allLocalModules } from '../data';
+import { groqService } from '../services/groqService';
+import { transformAILevelToScenes } from '../services/aiLevelTransformer';
+import toast from 'react-hot-toast';
 
 const ScenarioPlayer = () => {
   const { user } = useAuth();
@@ -35,29 +38,46 @@ const ScenarioPlayer = () => {
       if (!moduleId) return;
       
       const mod = allLocalModules.find(m => m.id === moduleId) || null;
-      const sceneList = getLocalScenes(moduleId);
+      if (!mod) { navigate(-1); return; }
       
-      if (!mod || sceneList.length === 0) { navigate(-1); return; }
       setModule(mod);
-      setScenes(sceneList);
 
-      if (user && childId) {
-        const existingProgress = await getProgress(user.uid, childId, moduleId);
-        if (existingProgress && existingProgress.status === 'in_progress') {
-          setVisitedSceneIds(existingProgress.visitedSceneIds);
-          const lastVisited = existingProgress.visitedSceneIds[existingProgress.visitedSceneIds.length - 1];
-          const lastScene = sceneList.find(s => s.id === lastVisited);
-          setCurrentScene(lastScene || sceneList[0]);
-        } else {
-          setCurrentScene(sceneList[0]);
+      try {
+        const childAge = activeChild?.age || 12;
+        let ageGroup = '11-13';
+        if (childAge <= 10) ageGroup = '8-10';
+        else if (childAge >= 14) ageGroup = '14-16';
+
+        const aiLevel = await groqService.generateCampaignLevel(
+          mod.title,
+          mod.category,
+          mod.difficulty,
+          ageGroup
+        );
+
+        const sceneList = transformAILevelToScenes(aiLevel, moduleId);
+        
+        if (sceneList.length === 0) { 
+          toast.error("Failed to load questions. Please try again.");
+          navigate(-1); 
+          return; 
         }
-      } else {
+
+        setScenes(sceneList);
         setCurrentScene(sceneList[0]);
+        // Note: For dynamic levels, we ignore mid-level progress (visitedSceneIds) to ensure 
+        // the new dynamic scenes don't clash with old session IDs.
+        setVisitedSceneIds([]);
+      } catch (error) {
+        console.error("Error generating dynamic campaign level:", error);
+        toast.error("Error loading dynamic level. Please try again.");
+        navigate(-1);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadData();
-  }, [moduleId, user, childId, navigate]);
+  }, [moduleId, user, childId, navigate, activeChild?.age]);
 
   // Setup timers
   useEffect(() => {

@@ -1,5 +1,5 @@
 import Groq from 'groq-sdk';
-import type { AIGeneratedLevel, LevelContext } from '../types';
+import type { AIGeneratedLevel, LevelContext, SafetyTwinProfile, LearningEvent, AIReport } from '../types';
 
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
@@ -8,12 +8,15 @@ const SYSTEM_INSTRUCTION = `You are an educational game content generator for "R
 RULES:
 1. Return ONLY valid JSON. No markdown, no explanations, no extra text.
 2. All content must be safe, educational, age-appropriate, and legally accurate for India.
-3. Never invent laws. Only use real Indian laws, acts, and constitutional articles.
+3. Never invent laws. Only use real Indian laws, acts, and constitutional articles (e.g., IPC, POCSO, IT Act, Consumer Protection Act, Constitution Articles).
 4. Use official Indian emergency numbers: 112 (National Emergency), 1098 (Childline), 1091 (Women Helpline), 1930 (Cyber Crime), 100 (Police), 101 (Fire), 108 (Ambulance).
+5. DO NOT use unescaped newlines inside JSON string values. Keep text as single continuous strings without line breaks.
 5. No violence, political bias, religious bias, graphic content, or frightening descriptions.
 6. Characters should be relatable Indian children with realistic scenarios.
 7. Stories should naturally lead into the questions.
 8. Never repeat the same question, story, or character name within a session.
+9. CRITICAL: Questions MUST be detailed, long (at least 3-4 sentences), and present a highly specific legal dilemma. DO NOT generate short or trivial questions.
+10. CRITICAL: Options must be well-thought-out. The legalFact and explanation MUST cite specific Indian laws, Articles, or Acts and explain them deeply.
 
 QUESTION TYPES YOU CAN USE:
 - "mcq": Multiple choice with 4 options
@@ -21,13 +24,12 @@ QUESTION TYPES YOU CAN USE:
 - "decision": A scenario where the player must choose the best action
 - "order_sequence": Arrange steps in the correct order (provide items as options)
 - "scenario": Analyze a situation and pick the safest/legal response
-- "spot_danger": Identify the dangerous element in a described situation
 
 DIFFICULTY GUIDELINES:
-- Easy (age 8-10): Simple words, short sentences, basic concepts
-- Medium (age 11-13): Moderate vocabulary, real-world scenarios
-- Hard (age 14-16): Advanced legal concepts, nuanced situations
-- Expert: Complex multi-layered scenarios
+- Easy (age 8-10): Foundational rights and basic safety. Questions MUST still be detailed scenarios (3-4 sentences) but use simple language.
+- Medium (age 11-13): Introduce specific laws and constitutional rights. Scenarios must be complex, real-life situations requiring critical thinking.
+- Hard (age 14-16): Advanced legal concepts, exact Sections/Articles (e.g., Article 21, Section 66E). Wrong options should be highly plausible to trick the player.
+- Expert: Multi-layered legal scenarios combining multiple rights, laws, and intricate situational variables.
 
 TOPICS YOU CAN COVER:
 Child Rights, Women's Rights, Girls Safety, Cyber Safety, Self Defence, Road Safety, Emergency Awareness, Consumer Rights, Environmental Laws, Constitution, Fundamental Rights, Fundamental Duties, Digital Privacy, Bullying, Stranger Danger, Disaster Management, Internet Scams, Good Touch Bad Touch, Emergency Numbers, Legal Awareness
@@ -43,7 +45,7 @@ OUTPUT FORMAT (strict JSON):
   "learningObjective": "<what the player will learn>",
   "questions": [
     {
-      "type": "<mcq|true_false|decision|order_sequence|scenario|spot_danger>",
+      "type": "<mcq|true_false|decision|order_sequence|scenario>",
       "question": "<question text>",
       "options": ["<option1>", "<option2>", "<option3>", "<option4>"],
       "correctAnswer": "<exact text of correct option>",
@@ -137,10 +139,19 @@ class GroqLevelGenerator {
   }
 
   private cleanJson(text: string): string {
-    return text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    let cleaned = text;
+    if (start !== -1 && end !== -1 && end >= start) {
+      cleaned = text.substring(start, end + 1);
+    } else {
+      cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+    // Replace all literal newlines with spaces to prevent JSON.parse from failing on unescaped newlines in strings
+    return cleaned.replace(/\n/g, ' ').replace(/\r/g, '');
   }
 
-  private async callGroq(userPrompt: string, retries = 2): Promise<AIGeneratedLevel> {
+  private async callGroq(userPrompt: string, retries = 2, expectedType: 'level' | 'json_object' = 'level'): Promise<any> {
     const client = this.getClient();
 
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -148,7 +159,7 @@ class GroqLevelGenerator {
         const response = await client.chat.completions.create({
           model: 'llama-3.1-8b-instant',
           messages: [
-            { role: 'system', content: SYSTEM_INSTRUCTION },
+            { role: 'system', content: expectedType === 'level' ? SYSTEM_INSTRUCTION : 'You are a helpful AI assistant. Return ONLY valid JSON.' },
             { role: 'user', content: userPrompt }
           ],
           temperature: 0.7,
@@ -159,13 +170,15 @@ class GroqLevelGenerator {
         const text = response.choices[0]?.message?.content || '{}';
         
         // Parse and validate
-        const parsed = JSON.parse(this.cleanJson(text)) as AIGeneratedLevel;
-        this.validateLevel(parsed);
+        const parsed = JSON.parse(this.cleanJson(text));
+        if (expectedType === 'level') {
+          this.validateLevel(parsed as AIGeneratedLevel);
+        }
         return parsed;
       } catch (err) {
         console.error(`Groq attempt ${attempt + 1} failed:`, err);
         if (attempt === retries) {
-          throw new Error(`Failed to generate level after ${retries + 1} attempts: ${err}`);
+          throw new Error(`Failed to generate after ${retries + 1} attempts: ${err}`);
         }
         // Wait before retry
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
@@ -189,8 +202,17 @@ class GroqLevelGenerator {
         throw new Error('MCQ question must have at least 2 options');
       }
     }
-    if (!level.reward || typeof level.reward.xp !== 'number') {
-      throw new Error('Invalid reward structure');
+    if (!level.reward) {
+      throw new Error('Invalid reward structure: missing reward');
+    }
+    if (typeof level.reward.xp === 'string') {
+      level.reward.xp = parseInt(level.reward.xp, 10);
+    }
+    if (typeof level.reward.coins === 'string') {
+      level.reward.coins = parseInt(level.reward.coins, 10);
+    }
+    if (typeof level.reward.xp !== 'number' || isNaN(level.reward.xp)) {
+      throw new Error(`Invalid reward structure: xp is ${level.reward.xp}`);
     }
   }
 
@@ -199,14 +221,60 @@ class GroqLevelGenerator {
     return this.callGroq(prompt);
   }
 
-  async generateDailyChallenge(context: LevelContext): Promise<AIGeneratedLevel> {
-    const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-    const extra = `This is a DAILY CHALLENGE for ${today}.
-- Make it themed around the current day or a general awareness topic.
-- It should feel special and time-limited.
-- Generate exactly 5 quick-fire questions.
-- Set the world name to "Daily Challenge"
-- Badge should be "Daily Champion" if score is 100%.`;
+  async generateCampaignLevel(moduleTitle: string, category: string, difficulty: string, ageGroup: string): Promise<AIGeneratedLevel> {
+    const prompt = `Generate a playable educational level for the game RightsQuest.
+
+PLAYER PROFILE:
+- Age Group: ${ageGroup}
+- Difficulty: ${difficulty}
+
+SPECIFIC LEVEL TOPIC:
+- Category: ${category}
+- Specific Title/Focus: ${moduleTitle}
+
+REQUIREMENTS:
+- Generate exactly 5 to 7 unique questions
+- Mix at least 2 different question types
+- Story must feature Indian children in relatable scenarios relevant to "${moduleTitle}"
+- All legal facts must reference real Indian laws
+- Difficulty should match: ${difficulty}`;
+
+    return this.callGroq(prompt);
+  }
+
+  async generateDailyChallenge(context: LevelContext & { recentDailyTopics?: string[] }): Promise<AIGeneratedLevel> {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+    
+    // Simple event check
+    const events: Record<string, string> = {
+      'November 14': 'Children\'s Day Special! Focus on Child Rights.',
+      'January 26': 'Republic Day Special! Focus on the Constitution.',
+      'August 15': 'Independence Day Special! Focus on Fundamental Duties.',
+      'March 8': 'Women\'s Day Special! Focus on Gender Equality.',
+      'November 26': 'Constitution Day Special! Focus on Preamble and Rights.',
+    };
+    
+    let eventText = '';
+    const dateMatch = `${today.toLocaleString('default', { month: 'long' })} ${today.getDate()}`;
+    if (events[dateMatch]) {
+      eventText = `IMPORTANT: Today is a special event: ${events[dateMatch]}`;
+    } else if (today.getMonth() === 9) { // 0-indexed, 9 = October
+      eventText = 'IMPORTANT: It is Cyber Safety Month! Focus heavily on digital hygiene and cyber crimes.';
+    }
+    
+    const types = ['Interactive Story', 'Puzzle', 'Investigation', 'Spot the Danger', 'Decision Making', 'Emergency Simulation', 'Cyber Detective', 'Legal Mystery', 'Scenario Challenge'];
+    const randomType = types[Math.floor(Math.random() * types.length)];
+
+    const extra = `This is a DAILY CHALLENGE for ${dateStr}.
+${eventText}
+- Challenge Type: ${randomType} (Structure the story/questions to match this type).
+- DO NOT repeat these recent topics: ${(context.recentDailyTopics || []).join(', ')}.
+- It must feel fresh, exciting, and time-limited.
+- Generate exactly 5 questions.
+- Set the world name to "Daily Challenge".
+- Set the title to be catchy and relevant to the Challenge Type.
+- Assign a reward of exactly 50 XP, 20 Coins, and a "Daily Champion" badge.`;
     
     const prompt = buildPrompt(context, 'daily challenge', extra);
     return this.callGroq(prompt);
@@ -382,6 +450,337 @@ OUTPUT EXACT JSON:
     } catch (err) {
       console.error('Story moderation failed:', err);
       return { isSafe: true };
+    }
+  }
+
+  async generateIncidentAdvice(reportContext: string): Promise<{ suggestion: string; actionableSteps: string[] }> {
+    const prompt = `Based on the following incident report from a parent regarding their child, provide supportive, non-legal educational advice.
+INCIDENT: "${reportContext}"
+
+RULES:
+1. Provide a short, empathetic suggestion (under 2 sentences).
+2. Provide exactly 3 actionable, practical steps the parent can take immediately.
+3. NEVER provide legal advice. Use phrases like "consider contacting" or "you might want to consult".
+4. Output EXACTLY as JSON: { "suggestion": "...", "actionableSteps": ["...", "...", "..."] }`;
+    
+    const response = await this.callGroq(prompt, 2, 'json_object');
+    return response as { suggestion: string; actionableSteps: string[] };
+  }
+
+  async generateCertificateContent(context: any, type: string): Promise<any> {
+    const prompt = `You are generating content for a personalized digital certificate for a child playing the "RightsQuest" legal awareness game.
+    
+CHILD DETAILS:
+- Name: ${context.childName}
+- Age Group: ${context.ageGroup}
+- Certificate Type: ${type}
+${context.worldName ? `- Completed World: ${context.worldName}` : ''}
+
+RULES:
+1. Return ONLY valid JSON.
+2. Make it sound extremely prestigious, encouraging, and personalized.
+
+OUTPUT FORMAT (strict JSON):
+{
+  "title": "<Certificate Title e.g., 'Child Rights Champion', 'Cyber Hero', etc.>",
+  "description": "<A 1-2 sentence description of the achievement>",
+  "learningSummary": "<A 2-3 sentence summary of what the child learned to earn this>",
+  "skillsLearned": ["<Skill 1>", "<Skill 2>", "<Skill 3>"],
+  "encouragement": "<A short personalized congratulatory message>",
+  "nextGoal": "<A short suggestion for what they should learn next>"
+}`;
+
+    const response = await this.callGroq(prompt, 2, 'json_object');
+    return response;
+  }
+
+  async generateChildHelpSuggestion(category: string, message: string): Promise<{ suggestion: string; actionableSteps: string[] }> {
+    const prompt = `You are a supportive, comforting, and highly knowledgeable AI assistant for an Indian child safety app called RightsQuest.
+A child has just submitted a request for help regarding a personal issue.
+CATEGORY: ${category}
+CHILD'S MESSAGE: ${message}
+
+RULES:
+1. Provide a highly empathetic, comforting, and validating message (2-3 paragraphs). Make the child feel heard, understood, and remind them clearly that it is NOT their fault.
+2. Provide 3-4 very clear, simple, and safe actionable steps they can take right now to protect themselves and feel better.
+3. Suggest exactly HOW they can talk to a trusted adult (give them a script or opening sentence they can use).
+4. Do not offer complex legal jargon. Keep the language extremely accessible for an 8-16 year old.
+5. Emphasize that a trusted adult has already been notified and will help them.
+6. If the message hints at a severe emergency, gently remind them they can call 1098 (Childline) or 112 (National Emergency).
+
+OUTPUT EXACT JSON:
+{
+  "suggestion": "Your highly empathetic and detailed comforting message here.",
+  "actionableSteps": ["Step 1", "Step 2", "Step 3"]
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 1024,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Child Help AI failed:', err);
+      return {
+        suggestion: "Thank you for sharing this with us. You did the right thing. A trusted adult has been notified and will help you soon. Remember, you are not alone.",
+        actionableSteps: [
+          "Take a deep breath and know you are safe.",
+          "Find a trusted adult nearby if you need immediate help."
+        ]
+      };
+    }
+  }
+
+  async generateSafetyAssessment(
+    childName: string,
+    topicData: { topicName: string, accuracy: number, completedModules: number }[],
+    overallAccuracy: number
+  ): Promise<{
+    insights: string[];
+    recommendations: { action: string, type: 'play_level' | 'read_story' | 'practice_quiz' }[];
+    riskIndicators: { description: string, priority: 'high' | 'medium' | 'low', relatedTopic: string }[];
+  }> {
+    const prompt = `You are an AI Safety Assessment Engine for the educational app RightsQuest.
+Analyze the learning data for ${childName}.
+OVERALL ACCURACY: ${overallAccuracy}%
+TOPIC DATA:
+${topicData.map(t => `- ${t.topicName}: ${t.accuracy}% accuracy (${t.completedModules} modules)`).join('\n')}
+
+RULES:
+1. Generate 3-5 personalized text insights about their performance. Be specific (e.g., "Excellent understanding of Child Rights", "Frequently makes mistakes in Cyber Safety").
+2. Generate 2-4 personalized recommendations (e.g., "Play Cyber Guardian Level 14").
+3. Detect 1-3 learning risks based on low accuracy (<70%). Mark priority as high, medium, or low based on severity.
+4. RETURN EXACT JSON ONLY. NO MARKDOWN.
+
+OUTPUT EXACT JSON:
+{
+  "insights": ["insight 1", "insight 2"],
+  "recommendations": [
+    { "action": "Play Cyber Guardian Level 14", "type": "play_level" }
+  ],
+  "riskIndicators": [
+    { "description": "Poor understanding of stranger danger.", "priority": "high", "relatedTopic": "Girls Safety" }
+  ]
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Safety Assessment AI failed:', err);
+      return { insights: [], recommendations: [], riskIndicators: [] };
+    }
+  }
+
+  async generateIncidentReport(
+    initialConcern: string,
+    chatHistory: { question: string; answer: string }[],
+    isChildMode: boolean = false
+  ): Promise<{
+    summary: string;
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    immediateSteps: string[];
+    dosAndDonts: { dos: string[]; donts: string[] };
+    mentalHealthAdvice: string;
+    officialReportingOptions: string[];
+    governmentResources: string[];
+    emergencyNumbers: string[];
+    recommendedMissions: string[];
+  }> {
+    const chatContext = chatHistory.map(h => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n');
+    
+    const parentPrompt = `You are a Child Safety & Legal Expert AI for RightsQuest.
+A parent is reporting a safety concern regarding their child.
+
+INITIAL CONCERN: "${initialConcern}"
+
+COLLECTED DETAILS:
+${chatContext}
+
+RULES:
+1. Provide a deeply compassionate, professional, and highly detailed analytical summary of the situation based on the parent's concern and answers. Explain the potential legal or psychological implications in simple terms.
+2. Accurately assess the risk level (low, medium, high, critical) based on Indian context and child safety guidelines.
+3. Provide 4-6 immediate, highly specific actionable steps the parent must take to secure the child's safety and well-being.
+4. Provide comprehensive Do's and Don'ts for the parent (focusing on not victim-blaming, preserving evidence, etc.).
+5. Provide in-depth advice on how to emotionally support the child, including exact phrasing or conversation starters the parent can use.
+6. List official Indian reporting options (e.g., National Cyber Crime Reporting Portal) with specific guidance on when to use them.
+7. List relevant government resources and NGOs.
+8. Include relevant Indian emergency numbers (e.g., 112, 1098, 1091, 1930).
+9. Suggest 2-3 specific topics or missions the child should learn in RightsQuest to prevent this in the future.
+10. RETURN EXACT JSON ONLY. NO MARKDOWN OUTSIDE JSON.`;
+
+    const childPrompt = `You are a very supportive, comforting, and knowledgeable AI assistant for an Indian child safety app called RightsQuest.
+A child has just reported a personal safety issue or incident that they are facing.
+
+WHAT THEY REPORTED: "${initialConcern}"
+
+COLLECTED DETAILS:
+${chatContext}
+
+RULES FOR REPLYING TO THE CHILD:
+1. "summary": Provide a highly empathetic, comforting, and validating message (2-3 paragraphs). Make the child feel heard, understood, and remind them clearly that it is NOT their fault.
+2. "riskLevel": Assess the risk level (low, medium, high, critical).
+3. "immediateSteps": Provide 3-4 very clear, simple, and safe actionable steps they can take right now to protect themselves and feel better.
+4. "dosAndDonts": 
+    - "dos": Give them simple, safe things to do (like talking to parents, saving screenshots).
+    - "donts": Give them simple things NOT to do (like replying to bullies, sharing location).
+5. "mentalHealthAdvice": Give them comforting advice on how to calm down or feel better right now.
+6. "officialReportingOptions": List things like "Talk to a teacher" or "Tell your parents" or simple portals if they are older.
+7. "governmentResources": List safe resources (like Childline).
+8. "emergencyNumbers": If it's a severe emergency, remind them they can call 1098 (Childline) or 112 (National Emergency).
+9. "recommendedMissions": Suggest 2-3 topics in RightsQuest they should play to learn how to handle this.
+10. KEEP LANGUAGE SIMPLE FOR AN 8-16 YEAR OLD. Use words like "You" to address the child directly.
+11. RETURN EXACT JSON ONLY. NO MARKDOWN OUTSIDE JSON.`;
+
+    const prompt = isChildMode ? childPrompt : parentPrompt;
+
+    const jsonFormat = `
+OUTPUT EXACT JSON:
+{
+  "summary": "String",
+  "riskLevel": "high",
+  "immediateSteps": ["Step 1", "Step 2"],
+  "dosAndDonts": {
+    "dos": ["Do this"],
+    "donts": ["Don't do this"]
+  },
+  "mentalHealthAdvice": "String",
+  "officialReportingOptions": ["Option 1"],
+  "governmentResources": ["Resource 1"],
+  "emergencyNumbers": ["1930", "1098"],
+  "recommendedMissions": ["Mission 1"]
+}`;
+
+    const finalPrompt = prompt + "\\n" + jsonFormat;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: finalPrompt }],
+        temperature: 0.3,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Incident Report AI failed:', err);
+      throw new Error("Failed to generate AI report");
+    }
+  }
+  async analyzeLearningHistory(events: LearningEvent[], currentProfile: SafetyTwinProfile | null): Promise<Partial<SafetyTwinProfile>> {
+    const historyText = events.map(e => `- Topic: ${e.topic}, Score: ${e.score}%, Mistakes: ${(e.mistakes || []).join(', ')}`).join('\\n');
+    
+    const prompt = `You are the AI Safety Twin Engine for RightsQuest.
+Analyze the following recent learning events for a child and generate an updated safety profile.
+
+RECENT LEARNING HISTORY:
+${historyText || 'No recent events.'}
+
+CURRENT PROFILE (if exists):
+${currentProfile ? JSON.stringify(currentProfile, null, 2) : 'New User'}
+
+RULES:
+1. Update the overallScore (0-100) based on their average performance, keeping previous scores in mind.
+2. Update categoryScores (cyberSafety, childRights, girlsSafety, selfDefence, emergencyAwareness, digitalPrivacy, bullyingAwareness, roadSafety) based on the topics they interacted with. If a topic wasn't interacted with, keep its old score or default to 50 if new.
+3. Identify 2-4 strengthAreas (topics they score > 80%).
+4. Identify 2-4 weakAreas (topics they score < 60% or make many mistakes in).
+5. Suggest a recommendedDifficulty ("Easy", "Medium", "Hard") based on their overall score.
+6. RETURN EXACT JSON ONLY. NO MARKDOWN OUTSIDE JSON.
+
+OUTPUT EXACT JSON:
+{
+  "overallScore": 85,
+  "categoryScores": {
+    "cyberSafety": 70,
+    "childRights": 90,
+    "girlsSafety": 85,
+    "selfDefence": 60,
+    "emergencyAwareness": 95,
+    "digitalPrivacy": 50,
+    "bullyingAwareness": 80,
+    "roadSafety": 75
+  },
+  "strengthAreas": ["Emergency Awareness", "Child Rights"],
+  "weakAreas": ["Digital Privacy", "Self Defence"],
+  "recommendedDifficulty": "Medium"
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Safety Twin Analysis failed:', err);
+      throw new Error("Failed to analyze learning history");
+    }
+  }
+
+  async generateWeeklyReport(events: LearningEvent[], profile: SafetyTwinProfile): Promise<Omit<AIReport, 'id' | 'createdAt' | 'childId' | 'parentId' | 'weekStartDate'>> {
+    const historyText = events.map(e => `- Topic: ${e.topic}, Score: ${e.score}%, Time: ${e.timeSpent}s`).join('\\n');
+    
+    const prompt = `You are the AI Safety Twin Engine for RightsQuest.
+Generate a weekly report for a parent based on their child's recent activity and current safety profile.
+ 
+CURRENT PROFILE:
+Strengths: ${(profile.strengthAreas || []).join(', ')}
+Weaknesses: ${(profile.weakAreas || []).join(', ')}
+Overall Score: ${profile.overallScore}%
+
+THIS WEEK'S ACTIVITY:
+${historyText || 'No activity this week.'}
+
+RULES:
+1. Provide a short, encouraging improvementText (1-2 sentences).
+2. Identify the strongestTopic this week.
+3. Identify the needsAttentionTopic this week.
+4. Provide a clear aiRecommendationText (e.g., "We recommend playing the Cyber Detective Quest to improve Digital Privacy awareness.").
+5. Calculate learningTimeMinutes (sum of timeSpent / 60).
+6. Calculate completedMissions (count of events).
+7. RETURN EXACT JSON ONLY. NO MARKDOWN OUTSIDE JSON.
+
+OUTPUT EXACT JSON:
+{
+  "learningTimeMinutes": 45,
+  "completedMissions": 5,
+  "improvementText": "Alex had a great week, showing huge improvements in Cyber Safety!",
+  "strongestTopic": "Cyber Safety",
+  "needsAttentionTopic": "Digital Privacy",
+  "aiRecommendationText": "Play the 'Digital Footprints' mission next."
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        response_format: { type: 'json_object' }
+      });
+      const text = response.choices[0]?.message?.content || '{}';
+      return JSON.parse(this.cleanJson(text));
+    } catch (err) {
+      console.error('Weekly Report Generation failed:', err);
+      throw new Error("Failed to generate weekly report");
     }
   }
 }

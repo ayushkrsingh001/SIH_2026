@@ -3,7 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useChild } from '../contexts/ChildContext';
 import { addSupportRequest, getOrganizations } from '../firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
+import { groqService } from '../services/groqService';
 import { HELP_CATEGORIES, MASCOT_SMALL_URL } from '../constants';
 import { fadeInUp } from '../animations/variants';
 import toast from 'react-hot-toast';
@@ -18,10 +22,12 @@ interface HelpForm {
 
 const GetHelp = () => {
   const { user } = useAuth();
+  const { activeChild } = useChild();
   const { childId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [aiResponse, setAiResponse] = useState<{ suggestion: string; actionableSteps: string[] } | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const { register, handleSubmit, formState: { errors } } = useForm<HelpForm>();
 
@@ -32,16 +38,34 @@ const GetHelp = () => {
   const onSubmit = async (data: HelpForm) => {
     setLoading(true);
     try {
-      await addSupportRequest({
+      const refId = await addSupportRequest({
         childRefPath: data.anonymous ? null : `parents/${user?.uid}/children/${childId}`,
         category: data.category,
         message: data.message,
         status: 'new',
         assignedOrgId: null,
       });
+
+      if (!data.anonymous && user?.uid && activeChild) {
+        await addDoc(collection(db, 'notifications'), {
+          userId: user.uid,
+          actorId: activeChild.id || childId || '',
+          actorName: activeChild.displayName,
+          actorPhoto: activeChild.avatarId,
+          type: 'help_request',
+          postId: refId,
+          read: false,
+          createdAt: serverTimestamp()
+        });
+      }
+
+      const aiResult = await groqService.generateChildHelpSuggestion(data.category, data.message);
+      setAiResponse(aiResult);
+
       setSubmitted(true);
       toast.success('Your request has been submitted safely.');
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -63,6 +87,31 @@ const GetHelp = () => {
         <p className="font-body text-body-lg text-on-surface-variant mb-8">
           Your request has been received. A trusted adult will review it soon. You are not alone.
         </p>
+
+        {aiResponse && (
+          <div className="bg-primary-container/20 border-2 border-primary-container rounded-[24px] p-6 text-left mb-8 flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <img src={MASCOT_SMALL_URL} alt="Mascot" className="w-12 h-12 rounded-full" />
+              <h3 className="font-headline text-title-lg text-primary">A message for you</h3>
+            </div>
+            <p className="font-body text-body-md text-on-surface whitespace-pre-wrap">
+              {aiResponse.suggestion}
+            </p>
+            {aiResponse.actionableSteps && aiResponse.actionableSteps.length > 0 && (
+              <div className="mt-2 space-y-2">
+                <p className="font-headline text-label-lg text-primary">What you can do right now:</p>
+                <ul className="space-y-2">
+                  {aiResponse.actionableSteps.map((step, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-primary text-sm mt-0.5">asterisk</span>
+                      <span className="font-body text-body-sm text-on-surface">{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         {organizations.length > 0 && (
           <div className="bg-surface-container-lowest rounded-[24px] shadow-card p-6 text-left mb-8">

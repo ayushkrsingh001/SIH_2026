@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
 import { getAllChildProgress, getModules, getBadges, getChild } from '../firebase/firestore';
 import { calculateLevel, getXpForNextLevel } from '../services/xpSystem';
-import { AVATAR_OPTIONS } from '../constants';
+import { resolveAvatarUrl } from '../utils/avatar';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { staggerContainer, staggerItem } from '../animations/variants';
 import { PageSkeleton } from '../components/ui/SkeletonLoader';
@@ -42,7 +42,7 @@ const ChildProgress = () => {
 
   if (loading) return <PageSkeleton />;
 
-  const avatar = AVATAR_OPTIONS.find(a => a.id === activeChild?.avatarId) || AVATAR_OPTIONS[0];
+  const avatarUrl = resolveAvatarUrl(activeChild?.avatarId);
   const levelInfo = calculateLevel(activeChild?.xp || 0);
   const xpProgress = getXpForNextLevel(activeChild?.xp || 0);
   const completedModules = progress.filter(p => p.status === 'completed');
@@ -58,8 +58,8 @@ const ChildProgress = () => {
       >
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-container shadow-lg">
-              <img src={avatar.imageUrl} alt={activeChild?.displayName} className="w-full h-full object-cover" />
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-container shadow-lg bg-cream">
+              <img src={avatarUrl} alt={activeChild?.displayName} className="w-full h-full object-cover" />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center shadow-sm">
               <span className="font-headline text-caption font-bold text-on-tertiary-fixed">{levelInfo.level}</span>
