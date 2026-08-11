@@ -178,7 +178,7 @@ const NeedHelp = () => {
           amenityRegex = mapping[categoryId] || amenityRegex;
         }
 
-        const radius = 25000; // 25km radius
+        const radius = 10000; // 10km radius to prevent Overpass API timeout in dense areas
         const query = `
           [out:json][timeout:25];
           (
@@ -191,7 +191,10 @@ const NeedHelp = () => {
 
         const res = await fetch('https://overpass-api.de/api/interpreter', {
           method: 'POST',
-          body: query
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: 'data=' + encodeURIComponent(query)
         });
         const data = await res.json();
         
