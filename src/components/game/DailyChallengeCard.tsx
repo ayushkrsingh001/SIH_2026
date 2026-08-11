@@ -66,7 +66,8 @@ export const DailyChallengeCard = () => {
   };
 
   const isCompletedToday = () => {
-    if (!streak?.lastCompletedDate) return false;
+    if (todayChallenge?.status === 'completed') return true;
+    if (!streak?.lastCompletedDate || typeof streak.lastCompletedDate.toDate !== 'function') return false;
     const lastDate = streak.lastCompletedDate.toDate();
     const now = new Date();
     return lastDate.toDateString() === now.toDateString();
@@ -99,10 +100,15 @@ export const DailyChallengeCard = () => {
         currentXp: activeChild.xp,
         badgesEarned: [],
         avoidQuestions: [],
-        recentDailyTopics: [] // We could fetch past 5 days of challenges here to avoid repetition
+        recentDailyTopics: [] 
       };
 
       const levelData = await groqService.generateDailyChallenge(context);
+      
+      if (!levelData || !levelData.questions || levelData.questions.length === 0) {
+        throw new Error("Failed to generate questions. AI returned empty data.");
+      }
+
       const newChallenge: Omit<CachedAILevel, 'id'> = {
         childId: activeChild.id!,
         parentId: user.uid,
@@ -117,7 +123,8 @@ export const DailyChallengeCard = () => {
       navigate(`/play/${activeChild.id}/ai-level/${id}`);
     } catch (e: any) {
       console.error('Error generating daily challenge:', e);
-      toast.error(`Failed: ${e.message || 'Unknown error'}`);
+      alert(`Failed to start quiz: ${e.message || 'Unknown error'}`);
+      toast.error(`Failed to start: ${e.message || 'Unknown error'}`);
     } finally {
       setGenerating(false);
     }

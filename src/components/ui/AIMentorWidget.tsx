@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getSafetyTwinProfile } from '../../firebase/firestore';
 import type { SafetyTwinProfile } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   childId: string;
@@ -10,6 +11,7 @@ interface Props {
 
 const AIMentorWidget = ({ childId }: Props) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<SafetyTwinProfile | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   
@@ -39,7 +41,7 @@ const AIMentorWidget = ({ childId }: Props) => {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-28 md:bottom-6 right-4 md:right-6 z-50 bg-secondary text-on-secondary w-16 h-16 rounded-full shadow-elevation-3 flex items-center justify-center btn-tactile border-4 border-white"
       >
-        <span className="material-symbols-outlined text-3xl">psychology</span>
+        <span className="material-symbols-outlined text-3xl">shield</span>
         
         {/* Pulse effect if they have a low score area */}
         {profile.weakAreas?.length > 0 && (
@@ -66,8 +68,8 @@ const AIMentorWidget = ({ childId }: Props) => {
             >
               <div className="bg-secondary p-4 text-on-secondary flex justify-between items-center">
                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-2xl">psychology</span>
-                    <h3 className="font-headline font-bold text-title-md">AI Mentor</h3>
+                    <span className="material-symbols-outlined text-2xl">shield</span>
+                    <h3 className="font-headline font-bold text-title-md">Aegis</h3>
                  </div>
                  <button onClick={() => setIsOpen(false)}>
                    <span className="material-symbols-outlined hover:text-white/80 transition-colors">close</span>
@@ -98,12 +100,21 @@ const AIMentorWidget = ({ childId }: Props) => {
                    </div>
                  )}
                  
-                 <button 
-                   onClick={() => setIsOpen(false)} 
-                   className="w-full mt-4 bg-primary text-on-primary py-2 rounded-full font-bold btn-tactile"
-                 >
-                   Got it! Let's play!
-                 </button>
+                 <div className="mt-4 flex flex-col gap-2">
+                   <button 
+                     onClick={() => { setIsOpen(false); navigate(`/play/${childId}/chat`); }} 
+                     className="w-full bg-secondary text-on-secondary py-2 rounded-full font-bold btn-tactile flex items-center justify-center gap-2"
+                   >
+                     <span className="material-symbols-outlined text-[20px]">chat</span>
+                     Ask Aegis
+                   </button>
+                   <button 
+                     onClick={() => setIsOpen(false)} 
+                     className="w-full bg-surface-container-high text-on-surface py-2 rounded-full font-bold btn-tactile"
+                   >
+                     Close
+                   </button>
+                 </div>
               </div>
             </motion.div>
           </>

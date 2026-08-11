@@ -311,7 +311,7 @@ const WorldMap = () => {
       {/* Floating AI Hub Button */}
       <motion.button
         onClick={() => navigate(`/play/${childId}/ai-hub`)}
-        className="fixed bottom-6 right-6 z-30 bg-gradient-to-r from-primary to-secondary text-white rounded-full px-5 py-3.5 shadow-lg flex items-center gap-2 hover:shadow-xl transition-shadow"
+        className="fixed bottom-28 md:bottom-6 left-4 md:left-6 z-30 bg-gradient-to-r from-primary to-secondary text-white rounded-full px-5 py-3.5 shadow-lg flex items-center gap-2 hover:shadow-xl transition-shadow whitespace-nowrap"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ y: 100, opacity: 0 }}

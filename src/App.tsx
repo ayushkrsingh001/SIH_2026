@@ -36,6 +36,7 @@ const AIQuestComplete = lazy(() => import('./pages/AIQuestComplete'));
 const IncidentAssistant = lazy(() => import('./pages/IncidentAssistant'));
 const DailyQuizPage = lazy(() => import('./pages/DailyQuizPage'));
 const AISafetyTwinDashboard = lazy(() => import('./pages/Parent/AISafetyTwinDashboard'));
+const ChildChatBot = lazy(() => import('./pages/ChildChatBot'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -45,6 +46,8 @@ const SupportRequests = lazy(() => import('./pages/admin/SupportRequests'));
 const FeedbackTable = lazy(() => import('./pages/admin/FeedbackTable'));
 const HelpServicesManager = lazy(() => import('./pages/admin/HelpServicesManager'));
 const NeedHelp = lazy(() => import('./pages/NeedHelp'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 const PageLoader = () => (
   <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 relative overflow-x-hidden">
@@ -81,6 +84,8 @@ const AnimatedRoutes = () => {
           <Route path="/dashboard/safety-twin/:childId" element={<AISafetyTwinDashboard />} />
           <Route path="/community" element={<Community />} />
           <Route path="/incident-assistant" element={<IncidentAssistant />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* Who's Playing */}
@@ -102,6 +107,7 @@ const AnimatedRoutes = () => {
           <Route path="ai-hub" element={<AIHub />} />
           <Route path="ai-level/:aiLevelId" element={<AILevelPlayer />} />
           <Route path="ai-complete/:aiLevelId" element={<AIQuestComplete />} />
+          <Route path="chat" element={<ChildChatBot />} />
         </Route>
 
         {/* Community is now grouped under Parent Routes above */}

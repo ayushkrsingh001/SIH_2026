@@ -64,9 +64,9 @@ export const SafetyAnalytics = ({ child }: Props) => {
     return (
       <div className="bg-surface-container-lowest rounded-[24px] shadow-sm p-8 text-center max-w-lg mx-auto mt-8 border border-outline-variant">
         <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="material-symbols-outlined text-4xl text-primary">psychology</span>
+          <span className="material-symbols-outlined text-4xl text-primary">shield</span>
         </div>
-        <h2 className="font-headline text-headline-sm text-on-surface mb-2">AI Safety Assessment</h2>
+        <h2 className="font-headline text-headline-sm text-on-surface mb-2">Aegis Safety Assessment</h2>
         <p className="font-body text-body-md text-on-surface-variant mb-6">
           Generate an AI-powered safety risk report based on {child.displayName}'s learning progress and quiz answers.
         </p>
@@ -160,7 +160,7 @@ export const SafetyAnalytics = ({ child }: Props) => {
         >
           <div className="flex items-center gap-2 mb-4">
             <span className="material-symbols-outlined text-primary">auto_awesome</span>
-            <h3 className="font-headline text-title-lg text-on-surface">AI Insights</h3>
+            <h3 className="font-headline text-title-lg text-on-surface">Aegis Insights</h3>
           </div>
           <ul className="space-y-3">
             {assessment.insights.map((insight, idx) => (
@@ -258,7 +258,7 @@ export const SafetyAnalytics = ({ child }: Props) => {
         >
           <h3 className="font-headline text-title-md text-on-surface mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-tertiary">explore</span>
-            AI Recommendations
+            Aegis Recommendations
           </h3>
           <div className="space-y-3">
             {assessment.recommendations.map(rec => (

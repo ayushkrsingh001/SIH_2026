@@ -13,19 +13,21 @@ export const ChildLayout = () => {
   const { childId } = useParams();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
 
   const avatarUrl = resolveAvatarUrl(activeChild?.avatarId);
   const levelInfo = calculateLevel(activeChild?.xp || 0);
 
   const navItems = [
-    { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: 'Daily Quiz' },
-    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: 'Report Incident' },
     { path: `/play/${childId}/map`, icon: 'map', label: 'Map' },
+    { path: `/play/${childId}/chat`, icon: 'chat', label: 'AI Chat' },
     { path: `/play/${childId}/progress`, icon: 'emoji_events', label: 'Progress' },
     { path: `/play/${childId}/store`, icon: 'storefront', label: 'Store' },
-    { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: 'Ranks' },
+    { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: 'Daily Quiz' },
     { path: `/play/${childId}/multiplayer`, icon: 'swords', label: 'Battle' },
-    { path: `/play/${childId}/need-help`, icon: 'sos', label: 'Need Help' },
+    { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: 'Ranks' },
+    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: 'Report' },
+    { path: `/play/${childId}/need-help`, icon: 'sos', label: 'Help' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -53,8 +55,8 @@ export const ChildLayout = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navItems.map(item => (
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2 relative">
+            {navItems.slice(0, 5).map(item => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -65,9 +67,58 @@ export const ChildLayout = () => {
                 }`}
               >
                 <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''} text-[20px]`}>{item.icon}</span>
-                <span className="font-body text-label-lg">{item.label}</span>
+                <span className="font-body text-label-lg whitespace-nowrap">{item.label}</span>
               </Link>
             ))}
+            
+            {/* Desktop More Button */}
+            <div className="relative">
+              <button
+                onClick={() => setIsDesktopMenuOpen(!isDesktopMenuOpen)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                  isDesktopMenuOpen 
+                    ? 'bg-secondary-container text-on-secondary-container font-bold' 
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+              >
+                <span className="font-body text-label-lg">More</span>
+                <span className="material-symbols-outlined text-[20px]">{isDesktopMenuOpen ? 'expand_less' : 'expand_more'}</span>
+              </button>
+              
+              <AnimatePresence>
+                {isDesktopMenuOpen && (
+                  <>
+                    {/* Invisible backdrop to close dropdown when clicking outside */}
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setIsDesktopMenuOpen(false)} 
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl overflow-hidden shadow-elevation-3 border border-outline-variant z-50 flex flex-col"
+                    >
+                      {navItems.slice(5).map(item => (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setIsDesktopMenuOpen(false)}
+                          className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                            isActive(item.path)
+                              ? 'bg-primary/10 text-primary font-bold'
+                              : 'text-on-surface hover:bg-surface-container-high'
+                          }`}
+                        >
+                          <span className={`material-symbols-outlined ${isActive(item.path) ? 'filled' : ''} text-[20px]`}>{item.icon}</span>
+                          <span className="font-body text-label-lg">{item.label}</span>
+                        </Link>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
 
           {/* Actions Section */}

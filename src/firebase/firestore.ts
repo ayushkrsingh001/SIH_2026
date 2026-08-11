@@ -408,7 +408,28 @@ export const getCachedAILevelById = async (levelId: string): Promise<CachedAILev
   return snap.exists() ? { id: snap.id, ...snap.data() } as CachedAILevel : null;
 };
 
+const sanitizeFirestoreData = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    if (obj.some(el => Array.isArray(el))) {
+      const flat = obj.flat(Infinity);
+      return flat.map((item: any) => sanitizeFirestoreData(item));
+    }
+    return obj.map((item: any) => sanitizeFirestoreData(item));
+  } else if (obj !== null && typeof obj === 'object') {
+    if (obj.toDate && typeof obj.toDate === 'function') return obj;
+    const newObj: any = {};
+    for (const key in obj) {
+      newObj[key] = sanitizeFirestoreData(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+};
+
 export const cacheAILevel = async (level: Omit<CachedAILevel, 'id'>): Promise<string> => {
+  if (level.levelData) {
+    level.levelData = sanitizeFirestoreData(level.levelData);
+  }
   const ref = await addDoc(collection(db, 'aiLevelCache'), level);
   return ref.id;
 };

@@ -58,32 +58,37 @@ const AILevelPlayer = () => {
     if (!user || !childId || !aiLevelId || !cachedLevel) return;
     const finalScore = totalChoices > 0 ? Math.round((correctChoices / totalChoices) * 100) : 0;
 
-    // Update cached level status
-    await updateCachedAILevel(aiLevelId, {
-      status: 'completed',
-      score: finalScore,
-    });
-
-    // Award XP and coins
-    if (activeChild) {
-      const reward = cachedLevel.levelData.reward;
-      const newXp = (activeChild.xp || 0) + reward.xp;
-      const newCoins = (activeChild.coins || 0) + reward.coins;
-      const newCompletedCount = (activeChild.completedLevelsCount || 0) + 1;
-      
-      await updateChild(user.uid, childId, {
-        xp: newXp,
-        coins: newCoins,
-        completedLevelsCount: newCompletedCount,
-        lastActive: Timestamp.now(),
+    try {
+      // Update cached level status
+      await updateCachedAILevel(aiLevelId, {
+        status: 'completed',
+        score: finalScore,
       });
 
-      // Update local state for triggers in the next screen
-      activeChild.completedLevelsCount = newCompletedCount;
+      // Award XP and coins
+      if (activeChild) {
+        const reward = cachedLevel.levelData.reward;
+        const newXp = (activeChild.xp || 0) + reward.xp;
+        const newCoins = (activeChild.coins || 0) + reward.coins;
+        const newCompletedCount = (activeChild.completedLevelsCount || 0) + 1;
+        
+        await updateChild(user.uid, childId, {
+          xp: newXp,
+          coins: newCoins,
+          completedLevelsCount: newCompletedCount,
+          lastActive: Timestamp.now(),
+        });
 
-      if (cachedLevel.type === 'daily_challenge') {
-        await updateDailyChallengeStreak(childId, user.uid);
+        // Update local state for triggers in the next screen
+        activeChild.completedLevelsCount = newCompletedCount;
+
+        if (cachedLevel.type === 'daily_challenge') {
+          await updateDailyChallengeStreak(childId, user.uid);
+        }
       }
+    } catch (error) {
+      console.error("Failed to save completion stats:", error);
+      toast.error("Couldn't save some progress, but level is complete!");
     }
   }, [user, childId, aiLevelId, cachedLevel, totalChoices, correctChoices, activeChild]);
 

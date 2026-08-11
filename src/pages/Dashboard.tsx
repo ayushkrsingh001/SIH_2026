@@ -277,8 +277,8 @@ const Dashboard = () => {
                       <span className="material-symbols-outlined text-sm">play_arrow</span>
                     </button>
                     <button onClick={() => navigate(`/dashboard/safety-twin/${child.id}`)} className="bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-full font-body text-label-md btn-tactile flex items-center justify-center gap-1 border-b-4 border-on-tertiary-fixed-variant">
-                      <span className="material-symbols-outlined text-sm">psychology</span>
-                      AI Safety Twin
+                      <span className="material-symbols-outlined text-sm">shield</span>
+                      Aegis Safety Twin
                     </button>
                   </div>
                 </div>

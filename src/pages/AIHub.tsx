@@ -107,7 +107,7 @@ const AIHub = () => {
         childId,
         parentId: user.uid,
         type,
-        topic: topic || null,
+        topic: topic || undefined,
         generatedAt: Timestamp.now(),
         expiresAt: type === 'daily_challenge' 
           ? Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000))

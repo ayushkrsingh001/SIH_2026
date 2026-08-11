@@ -344,7 +344,7 @@ const IncidentAssistant = () => {
                     type="text"
                     value={answers[step] || ''}
                     onChange={e => setAnswers({...answers, [step]: e.target.value})}
-                    placeholder={QUESTIONS[step-1].placeholder}
+                    placeholder={'placeholder' in QUESTIONS[step-1] ? (QUESTIONS[step-1] as any).placeholder : ''}
                     className="w-full bg-surface-container p-4 rounded-xl outline-none focus:ring-2 focus:ring-primary border border-outline-variant font-body"
                   />
                 ) : (

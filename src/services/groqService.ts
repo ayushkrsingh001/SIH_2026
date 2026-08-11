@@ -218,8 +218,10 @@ class GroqLevelGenerator {
           text = await this._executeOpenRouterCall(systemPrompt, userPrompt);
         }
         
-        // Parse and validate
-        const parsed = JSON.parse(this.cleanJson(text));
+        // Parse, sanitize and validate
+        const rawParsed = JSON.parse(this.cleanJson(text));
+        const parsed = this.sanitizeNestedArrays(rawParsed);
+        
         if (expectedType === 'level') {
           this.validateLevel(parsed as AIGeneratedLevel);
         }
@@ -238,6 +240,24 @@ class GroqLevelGenerator {
     }
     
     throw lastError;
+  }
+
+  private sanitizeNestedArrays(obj: any): any {
+    if (Array.isArray(obj)) {
+      // If any element is an array, flatten the whole array completely
+      if (obj.some(el => Array.isArray(el))) {
+        const flat = obj.flat(Infinity);
+        return flat.map((item: any) => this.sanitizeNestedArrays(item));
+      }
+      return obj.map((item: any) => this.sanitizeNestedArrays(item));
+    } else if (obj !== null && typeof obj === 'object') {
+      const newObj: any = {};
+      for (const key in obj) {
+        newObj[key] = this.sanitizeNestedArrays(obj[key]);
+      }
+      return newObj;
+    }
+    return obj;
   }
 
   private validateLevel(level: AIGeneratedLevel): void {
@@ -601,6 +621,79 @@ OUTPUT EXACT JSON:
     }
   }
 
+  async chatWithChild(
+    message: string,
+    conversationHistory: { role: string; content: string }[] = []
+  ): Promise<{ answer: string; emergencyNumbers?: string[]; actionableSteps?: string[] }> {
+    const historyContext = conversationHistory.length > 0
+      ? `\nPREVIOUS CONVERSATION:\n${conversationHistory.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n')}\n`
+      : '';
+
+    const prompt = `You are Aegis, the trusted AI Safety Guardian of RightsQuest.
+Your purpose is to help children understand Child Rights, Cyber Safety, Legal Awareness, Personal Safety, Digital Responsibility, and Emergency Awareness.
+You provide educational awareness only. You are NOT a lawyer. You guide users with simple, safe, and responsible information.
+You MUST speak in highly natural, authentic Hinglish (Hindi written in English letters). 
+
+${historyContext}
+CHILD'S MESSAGE: ${message}
+
+TONE & STYLE GUIDELINES:
+1. Show deep empathy, warmth, and protection. Talk like a real, trustworthy Indian guardian.
+2. If the child asks a direct question (e.g., "tumhara naam kya hai?", "tum kaun ho?"), ANSWER IT DIRECTLY and naturally (e.g., "Mera naam Aegis hai, main tumhara AI Safety Guardian hoon!").
+3. Use natural comforting phrases ONLY when they are sad or distressed: "Main samajh sakta hoon", "Koi baat nahi, main tumhare saath hoon".
+4. AVOID awkward, robotic phrases like "kya wo baat hai", "bol", "mujhe lagta hai", "samajh mein aata hoon".
+5. Keep it short (2-3 sentences), friendly, encouraging, and positive.
+6. If they just say "Hello" or "Hi", warmly say: "Hi! I'm Aegis 🛡️ I'm your Safety Guardian. I'll help you learn your rights, stay safe, and become a Safety Hero!" (Translate to their language if they speak Hindi/Hinglish).
+
+EXAMPLES OF GOOD REPLIES:
+Child: "aaj acha nahi lag rha"
+AI: "Arey, kya hua? Tum thode pareshan lag rahe ho. Agar kuch share karna chaho toh main yahan sunne ke liye hoon. 😊"
+
+Child: "tumhra name ky h?"
+AI: "Mera naam Aegis hai! 🛡️ Main ek dost ki tarah yahan tumhari safety aur madad ke liye hoon. Batao, aaj kya baatein karni hain?"
+
+Child: "mere sath kuch galat hua"
+AI: "Ye sunkar mujhe bahut bura laga. Par yaad rakhna, isme tumhari koi galti nahi hai. Tum bilkul safe ho yahan. Agar tum chaho toh mujhe bata sakte ho kya hua."
+
+OUTPUT EXACT JSON:
+{
+  "answer": "Your highly natural, comforting Hinglish response here"
+}`;
+
+    try {
+      const client = this.getClient();
+      const response = await client.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: 'You are a helpful AI assistant. Return ONLY valid JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 250,
+        response_format: { type: 'json_object' }
+      });
+      
+      const text = response.choices[0]?.message?.content || '{}';
+      
+      try {
+        return JSON.parse(this.cleanJson(text));
+      } catch (parseError) {
+        // Fallback for models like Lyria that might output non-JSON text
+        const cleanedText = text
+          .replace(/\[\[.*?\]\]/g, '')
+          .replace(/\[.*?\]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        return { answer: cleanedText || text };
+      }
+    } catch (err) {
+      console.error('Child Chat AI failed:', err);
+      return {
+        answer: "I'm having a little trouble thinking right now! 🧠 But please remember, if you need help, you can always talk to a trusted adult or call 1098 (Childline).",
+      };
+    }
+  }
+
   async generateSafetyAssessment(
     childName: string,
     topicData: { topicName: string, accuracy: number, completedModules: number }[],
@@ -610,14 +703,14 @@ OUTPUT EXACT JSON:
     recommendations: { action: string, type: 'play_level' | 'read_story' | 'practice_quiz' }[];
     riskIndicators: { description: string, priority: 'high' | 'medium' | 'low', relatedTopic: string }[];
   }> {
-    const prompt = `You are an AI Safety Assessment Engine for the educational app RightsQuest.
+    const prompt = `You are Aegis, the AI Safety Guardian for the educational app RightsQuest.
 Analyze the learning data for ${childName}.
 OVERALL ACCURACY: ${overallAccuracy}%
 TOPIC DATA:
 ${topicData.map(t => `- ${t.topicName}: ${t.accuracy}% accuracy (${t.completedModules} modules)`).join('\n')}
 
 RULES:
-1. Generate 3-5 personalized text insights about their performance. Be specific (e.g., "Excellent understanding of Child Rights", "Frequently makes mistakes in Cyber Safety").
+1. Generate 3-5 personalized text insights about their performance as Aegis (e.g., "Aegis noticed that ${childName} needs more practice in Cyber Safety.").
 2. Generate 2-4 personalized recommendations (e.g., "Play Cyber Guardian Level 14").
 3. Detect 1-3 learning risks based on low accuracy (<70%). Mark priority as high, medium, or low based on severity.
 4. RETURN EXACT JSON ONLY. NO MARKDOWN.
@@ -666,7 +759,7 @@ OUTPUT EXACT JSON:
   }> {
     const chatContext = chatHistory.map(h => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n');
     
-    const parentPrompt = `You are a Child Safety & Legal Expert AI for RightsQuest.
+    const parentPrompt = `You are Aegis, the Child Safety & Legal Expert AI Guardian for RightsQuest.
 A parent is reporting a safety concern regarding their child.
 
 INITIAL CONCERN: "${initialConcern}"
@@ -686,7 +779,7 @@ RULES:
 9. Suggest 2-3 specific topics or missions the child should learn in RightsQuest to prevent this in the future.
 10. RETURN EXACT JSON ONLY. NO MARKDOWN OUTSIDE JSON.`;
 
-    const childPrompt = `You are a very supportive, comforting, and knowledgeable AI assistant for an Indian child safety app called RightsQuest.
+    const childPrompt = `You are Aegis, the highly supportive, comforting, and knowledgeable AI Safety Guardian for an Indian child safety app called RightsQuest.
 A child has just reported a personal safety issue or incident that they are facing.
 
 WHAT THEY REPORTED: "${initialConcern}"

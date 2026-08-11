@@ -35,6 +35,7 @@ export interface Child {
   weakTopics?: string[];
   strongTopics?: string[];
   // AI Safety Twin Data (stored on Child doc to bypass nested subcollection rules)
+  aiGuardianName?: string; // e.g., 'Aegis'
   safetyTwinProfile?: SafetyTwinProfile;
   learningEvents?: LearningEvent[];
   aiReports?: AIReport[];
