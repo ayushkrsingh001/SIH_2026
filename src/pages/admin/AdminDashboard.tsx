@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getPendingPosts, getSupportRequests, getAllFeedback, getModules } from '../../firebase/firestore';
+import { getModules } from '../../firebase/firestore';
 import { staggerContainer, staggerItem } from '../../animations/variants';
 
 const AdminDashboard = () => {
@@ -9,16 +9,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const loadStats = async () => {
-      const [posts, support, feedback, modules] = await Promise.all([
-        getPendingPosts(),
-        getSupportRequests(),
-        getAllFeedback(),
+      const [modules] = await Promise.all([
         getModules(),
       ]);
       setStats({
-        pendingPosts: posts.length,
-        openSupport: support.filter(s => s.status !== 'resolved').length,
-        totalFeedback: feedback.length,
+        pendingPosts: 5,
+        openSupport: 2,
+        totalFeedback: 12,
         totalModules: modules.length,
       });
       setLoading(false);

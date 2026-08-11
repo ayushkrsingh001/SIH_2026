@@ -1,5 +1,5 @@
 import type { Module, Scene } from '../types';
-import { createChoiceScene, createSpotDangerScene, createOrderScene } from './world1';
+import { createChoiceScene, createOrderScene } from './world1';
 
 export const world5Modules: Omit<Module, 'id'>[] = [
   { title: "Consumer Rights", description: "Know what you buy.", category: "Legal", difficulty: "Medium", estimatedMinutes: 6, ageRange: "12-16", order: 41, xpReward: 100, coinReward: 10, coverImageUrl: "", prerequisiteModuleId: "W4_L40" },

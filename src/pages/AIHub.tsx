@@ -8,8 +8,6 @@ import {
   getCachedAILevel,
   getDailyChallenge,
   cacheAILevel,
-  getCachedAILevelById,
-  updateCachedAILevel,
   getCompletedAILevels,
 } from '../firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
@@ -18,6 +16,7 @@ import { calculateLevel } from '../services/xpSystem';
 import toast from 'react-hot-toast';
 import type { LevelContext, CachedAILevel, AIGeneratedLevel } from '../types';
 import { staggerContainer, staggerItem } from '../animations/variants';
+import { useTranslation } from 'react-i18next';
 
 const AI_TOPICS = [
   'Child Rights', 'Cyber Safety', 'Girls Safety', 'Self Defence', 'Road Safety',
@@ -27,16 +26,15 @@ const AI_TOPICS = [
 ];
 
 const AIHub = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { activeChild } = useChild();
   const navigate = useNavigate();
   const { childId } = useParams();
 
-  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
   const [dailyChallenge, setDailyChallenge] = useState<CachedAILevel | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [showTopicPicker, setShowTopicPicker] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +44,6 @@ const AIHub = () => {
   useEffect(() => {
     const loadData = async () => {
       if (!user || !childId) return;
-      setLoading(true);
       try {
         const [daily, completed] = await Promise.all([
           getDailyChallenge(user.uid, childId),
@@ -57,7 +54,6 @@ const AIHub = () => {
       } catch (err) {
         console.error('Failed to load AI hub data:', err);
       }
-      setLoading(false);
     };
     loadData();
   }, [user, childId]);
@@ -74,7 +70,7 @@ const AIHub = () => {
       completedTopics: activeChild?.strongTopics || [],
       weakTopics: activeChild?.weakTopics || [],
       strongTopics: activeChild?.strongTopics || [],
-      language: activeChild?.languagePref || 'en',
+      language: i18n.language || 'en',
       currentXp: activeChild?.xp || 0,
       badgesEarned: activeChild?.badgeIds || [],
       avoidQuestions: [],
@@ -116,13 +112,13 @@ const AIHub = () => {
         status: 'unplayed',
       });
 
-      toast.success(`🤖 AI generated "${aiLevel.title}"!`);
+      toast.success(t('aiHub.aiGeneratedToast', { title: aiLevel.title }));
       navigate(`/play/${childId}/ai-level/${levelId}`);
     } catch (err: unknown) {
       console.error('AI generation failed:', err);
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setError(msg);
-      toast.error('AI generation failed. Try again!');
+      toast.error(t('aiHub.aiGenFailedToast'));
     } finally {
       setGenerating(null);
     }
@@ -176,10 +172,10 @@ const AIHub = () => {
         <div className="flex-1">
           <h1 className="font-headline text-title-lg text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary filled">auto_awesome</span>
-            AI Adventure Hub
+            {t('aiHub.aiAdventureHub')}
           </h1>
           <p className="font-body text-caption text-on-surface-variant">
-            Fresh AI-generated challenges powered by Groq
+            {t('aiHub.aiHubDesc')}
           </p>
         </div>
         <div className="flex items-center gap-2 bg-surface-container-lowest rounded-full px-3 py-1.5 shadow-sm">
@@ -192,15 +188,15 @@ const AIHub = () => {
       <div className="flex gap-3 mb-6 overflow-x-auto pb-1">
         <div className="bg-surface-container-lowest rounded-2xl px-4 py-3 shadow-card flex items-center gap-2 shrink-0">
           <span className="material-symbols-outlined text-primary filled text-lg">bolt</span>
-          <span className="font-body text-label-md text-on-surface">{activeChild?.xp?.toLocaleString() || 0} XP</span>
+          <span className="font-body text-label-md text-on-surface">{activeChild?.xp?.toLocaleString() || 0} {t('aiHub.xp')}</span>
         </div>
         <div className="bg-surface-container-lowest rounded-2xl px-4 py-3 shadow-card flex items-center gap-2 shrink-0">
           <span className="material-symbols-outlined text-secondary filled text-lg">emoji_events</span>
-          <span className="font-body text-label-md text-on-surface">Lvl {levelInfo.level}</span>
+          <span className="font-body text-label-md text-on-surface">{t('aiHub.lvl', { level: levelInfo.level })}</span>
         </div>
         <div className="bg-surface-container-lowest rounded-2xl px-4 py-3 shadow-card flex items-center gap-2 shrink-0">
           <span className="material-symbols-outlined text-tertiary filled text-lg">auto_awesome</span>
-          <span className="font-body text-label-md text-on-surface">{completedCount} AI Quests</span>
+          <span className="font-body text-label-md text-on-surface">{t('aiHub.aiQuests', { count: completedCount })}</span>
         </div>
       </div>
 
@@ -213,9 +209,9 @@ const AIHub = () => {
         >
           <span className="material-symbols-outlined filled">error</span>
           <div>
-            <p className="font-body text-body-md font-semibold">AI Generation Failed</p>
+            <p className="font-body text-body-md font-semibold">{t('aiHub.aiGenFailed')}</p>
             <p className="font-body text-caption opacity-80">{error}</p>
-            <p className="font-body text-caption mt-1">Make sure your Groq API key is set in .env</p>
+            <p className="font-body text-caption mt-1">{t('aiHub.makeSureApiKey')}</p>
           </div>
           <button onClick={() => setError(null)} className="ml-auto">
             <span className="material-symbols-outlined text-sm">close</span>
@@ -236,11 +232,11 @@ const AIHub = () => {
             icon="calendar_today"
             iconColor="text-[#FF6B6B]"
             bgGradient="from-[#FF6B6B]/10 to-[#FF8E8E]/5"
-            title="Daily Challenge"
+            title={t('aiHub.dailyChallenge')}
             description={dailyChallenge ? 
-              (dailyChallenge.status === 'completed' ? '✅ Completed today!' : 'Continue your challenge!') 
-              : 'Fresh challenge every day!'}
-            badge={dailyChallenge?.status === 'completed' ? '✅ Done' : '🔥 New'}
+              (dailyChallenge.status === 'completed' ? t('aiHub.completedToday') : t('aiHub.continueChallenge')) 
+              : t('aiHub.freshChallenge')}
+            badge={dailyChallenge?.status === 'completed' ? t('aiHub.done') : t('aiHub.new')}
             badgeColor={dailyChallenge?.status === 'completed' ? 'bg-secondary' : 'bg-error'}
             loading={generating === 'daily_challenge'}
             disabled={dailyChallenge?.status === 'completed'}
@@ -254,9 +250,9 @@ const AIHub = () => {
             icon="psychology"
             iconColor="text-[#4ECDC4]"
             bgGradient="from-[#4ECDC4]/10 to-[#45B7AA]/5"
-            title="Weak Topic Quiz"
-            description={`Focus on: ${(activeChild?.weakTopics || ['Your weak areas']).slice(0, 2).join(', ')}`}
-            badge="🎯 Targeted"
+            title={t('aiHub.weakTopicQuiz')}
+            description={t('aiHub.focusOn', { topics: (activeChild?.weakTopics || ['Your weak areas']).slice(0, 2).join(', ') })}
+            badge={t('aiHub.targeted')}
             badgeColor="bg-secondary"
             loading={generating === 'revision'}
             onClick={handleRevision}
@@ -269,9 +265,9 @@ const AIHub = () => {
             icon="auto_stories"
             iconColor="text-[#A78BFA]"
             bgGradient="from-[#A78BFA]/10 to-[#8B5CF6]/5"
-            title="Bonus Story"
-            description="An AI-crafted adventure with new characters!"
-            badge="📖 Story"
+            title={t('aiHub.bonusStory')}
+            description={t('aiHub.bonusStoryDesc')}
+            badge={t('aiHub.story')}
             badgeColor="bg-tertiary"
             loading={generating === 'bonus_story'}
             onClick={handleBonusStory}
@@ -284,9 +280,9 @@ const AIHub = () => {
             icon="fitness_center"
             iconColor="text-[#F59E0B]"
             bgGradient="from-[#F59E0B]/10 to-[#D97706]/5"
-            title="Practice Mode"
-            description="Choose a topic and practice with AI questions"
-            badge="♾️ Unlimited"
+            title={t('aiHub.practiceMode')}
+            description={t('aiHub.practiceDesc')}
+            badge={t('aiHub.unlimited')}
             badgeColor="bg-primary"
             loading={generating === 'practice'}
             onClick={() => setShowTopicPicker(true)}
@@ -299,7 +295,7 @@ const AIHub = () => {
         <div className="mb-6">
           <h2 className="font-headline text-title-md text-on-surface mb-3 flex items-center gap-2">
             <span className="material-symbols-outlined text-tertiary filled">celebration</span>
-            Special Events
+            {t('aiHub.specialEvents')}
           </h2>
           <div className="space-y-3">
             {currentEvents.map(eventKey => {
@@ -332,14 +328,14 @@ const AIHub = () => {
       <div className="bg-surface-container-lowest rounded-2xl p-5 shadow-card">
         <h3 className="font-headline text-title-sm text-on-surface mb-3 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary filled">info</span>
-          How AI Adventures Work
+          {t('aiHub.howAIWorks')}
         </h3>
         <div className="space-y-2 font-body text-body-sm text-on-surface-variant">
-          <p>🤖 Groq AI creates unique stories and questions just for you</p>
-          <p>📚 Every session teaches real Indian laws and safety concepts</p>
-          <p>🔄 No two sessions are ever the same</p>
-          <p>💾 Your progress is saved — come back anytime to continue</p>
-          <p>🎯 AI adapts to your weak topics for better learning</p>
+          <p>{t('aiHub.howAI1')}</p>
+          <p>{t('aiHub.howAI2')}</p>
+          <p>{t('aiHub.howAI3')}</p>
+          <p>{t('aiHub.howAI4')}</p>
+          <p>{t('aiHub.howAI5')}</p>
         </div>
       </div>
 
@@ -359,8 +355,8 @@ const AIHub = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
-              <h3 className="font-headline text-title-lg text-on-surface mb-1">Choose a Topic</h3>
-              <p className="font-body text-caption text-on-surface-variant mb-4">AI will generate practice questions on this topic</p>
+              <h3 className="font-headline text-title-lg text-on-surface mb-1">{t('aiHub.chooseTopic')}</h3>
+              <p className="font-body text-caption text-on-surface-variant mb-4">{t('aiHub.chooseTopicDesc')}</p>
               <div className="grid grid-cols-2 gap-2">
                 {AI_TOPICS.map(topic => (
                   <button
@@ -376,7 +372,7 @@ const AIHub = () => {
                 onClick={() => setShowTopicPicker(false)}
                 className="w-full mt-4 py-3 text-on-surface-variant font-body text-label-md hover:bg-surface-container-high rounded-full transition-colors"
               >
-                Cancel
+                {t('aiHub.cancel')}
               </button>
             </motion.div>
           </motion.div>
@@ -407,8 +403,8 @@ const AIHub = () => {
                   auto_awesome
                 </motion.span>
               </div>
-              <p className="font-headline text-title-lg text-white">AI is creating your adventure...</p>
-              <p className="font-body text-body-md text-white/70">This may take a few seconds</p>
+              <p className="font-headline text-title-lg text-white">{t('aiHub.aiIsCreating')}</p>
+              <p className="font-body text-body-md text-white/70">{t('aiHub.takeFewSeconds')}</p>
             </motion.div>
           </motion.div>
         )}

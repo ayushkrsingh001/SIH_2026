@@ -3,7 +3,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -12,11 +11,8 @@ import {
   orderBy,
   serverTimestamp,
   limit,
-  startAfter,
   onSnapshot,
   increment,
-  Timestamp,
-  type DocumentSnapshot,
   type QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './config';
@@ -26,12 +22,9 @@ import type {
   WeeklyChallenge,
   WeeklyChallengeProgress,
   NearbyEvent,
-  EventRegistration,
   ChatSession,
   LegalNewsItem,
-  NewsReadStatus,
   MythFact,
-  MythFactProgress,
   NewsQuiz,
   FeedQuiz,
   FeedQuizAttempt,
@@ -115,7 +108,6 @@ export const updateCampaignParticipation = async (
 // ========== WEEKLY CHALLENGES ==========
 
 export const subscribeToActiveChallenge = (callback: (challenge: WeeklyChallenge | null) => void) => {
-  const now = Timestamp.now();
   const q = query(
     collection(db, 'weeklyChallenges'),
     where('status', '==', 'active'),
@@ -609,7 +601,7 @@ export const createRealStory = async (story: Omit<RealStory, 'id' | 'createdAt' 
   return ref.id;
 };
 
-export const toggleStoryLike = async (storyId: string, userId: string, authorId: string, actorName: string): Promise<boolean> => {
+export const toggleStoryLike = async (storyId: string, userId: string): Promise<boolean> => {
   const q = query(
     collection(db, 'storyLikes'),
     where('storyId', '==', storyId),

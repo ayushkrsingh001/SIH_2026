@@ -4,13 +4,15 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   getChild, getSafetyTwinProfile, getLearningHistory, getAIReports,
-  addAIReport, saveSafetyTwinProfile, deleteAIReport
+  addAIReport, deleteAIReport
 } from '../../firebase/firestore';
 import { groqService } from '../../services/groqService';
 import type { Child, SafetyTwinProfile, AIReport, LearningEvent } from '../../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AISafetyTwinDashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { childId } = useParams();
   
@@ -107,11 +109,11 @@ const AISafetyTwinDashboard = () => {
         <div>
           <Link to="/dashboard" className="text-primary font-body hover:underline flex items-center gap-1 mb-2">
             <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back to Dashboard
+            {t('dashboard.backToOverview')}
           </Link>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">AI Safety Twin</h1>
+          <h1 className="text-3xl font-headline font-bold text-on-surface">{t('safetyTwin.title')}</h1>
           <p className="text-on-surface-variant font-body mt-1">
-            Personalized safety analysis for {child.displayName}
+            {t('safetyTwin.subtitle', { name: child.displayName })}
           </p>
         </div>
         
@@ -120,8 +122,8 @@ const AISafetyTwinDashboard = () => {
             {profile?.overallScore || 0}%
           </div>
           <div>
-            <p className="font-body text-sm text-on-primary-container/70 font-semibold uppercase tracking-wider">Overall Safety Score</p>
-            <p className="font-body text-body-md text-on-primary-container font-medium">Based on recent activity</p>
+            <p className="font-body text-sm text-on-primary-container/70 font-semibold uppercase tracking-wider">{t('safetyTwin.overallScore')}</p>
+            <p className="font-body text-body-md text-on-primary-container font-medium">{t('safetyTwin.basedOnActivity')}</p>
           </div>
         </div>
       </div>
@@ -129,9 +131,9 @@ const AISafetyTwinDashboard = () => {
       {!profile ? (
         <div className="bg-surface-container-lowest p-8 rounded-3xl border border-outline-variant text-center">
           <span className="material-symbols-outlined text-6xl text-secondary mb-4">smart_toy</span>
-          <h3 className="text-xl font-bold font-body mb-2">No AI Twin Data Yet</h3>
+          <h3 className="text-xl font-bold font-body mb-2">{t('safetyTwin.noDataYet')}</h3>
           <p className="text-on-surface-variant font-body max-w-md mx-auto">
-            {child.displayName} needs to complete a few quests or quizzes for the AI Safety Twin to generate a profile.
+            {t('safetyTwin.needsMoreQuests', { name: child.displayName })}
           </p>
         </div>
       ) : (
@@ -142,7 +144,7 @@ const AISafetyTwinDashboard = () => {
             <div className="bg-white p-6 rounded-3xl border border-outline-variant shadow-sm">
               <h3 className="font-bold font-body text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-green-500">verified</span>
-                Strong Areas
+                {t('safetyTwin.strongAreas')}
               </h3>
               {profile.strengthAreas?.length > 0 ? (
                 <ul className="space-y-2">
@@ -154,14 +156,14 @@ const AISafetyTwinDashboard = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500 font-body">Not enough data to determine strengths.</p>
+                <p className="text-sm text-gray-500 font-body">{t('safetyTwin.notEnoughStrengths')}</p>
               )}
             </div>
 
             <div className="bg-white p-6 rounded-3xl border border-outline-variant shadow-sm">
               <h3 className="font-bold font-body text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-red-500">warning</span>
-                Areas for Improvement
+                {t('safetyTwin.areasForImprovement')}
               </h3>
               {profile.weakAreas?.length > 0 ? (
                 <ul className="space-y-2">
@@ -173,14 +175,14 @@ const AISafetyTwinDashboard = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500 font-body">No significant weaknesses detected.</p>
+                <p className="text-sm text-gray-500 font-body">{t('safetyTwin.noWeaknesses')}</p>
               )}
             </div>
             
             <div className="bg-tertiary-container/30 p-6 rounded-3xl border border-tertiary/20 shadow-sm">
-               <h3 className="font-bold font-body text-lg mb-2 text-on-tertiary-container">Learning Style</h3>
-               <p className="font-body text-on-surface capitalize">{profile.learningStyle || 'mixed'} Learner</p>
-               <p className="text-xs text-on-surface-variant mt-1">The AI adapts future content to this style.</p>
+               <h3 className="font-bold font-body text-lg mb-2 text-on-tertiary-container">{t('safetyTwin.learningStyle')}</h3>
+               <p className="font-body text-on-surface capitalize">{profile.learningStyle || 'mixed'} {t('safetyTwin.learner')}</p>
+               <p className="text-xs text-on-surface-variant mt-1">{t('safetyTwin.adaptsContent')}</p>
             </div>
           </div>
 
@@ -188,7 +190,7 @@ const AISafetyTwinDashboard = () => {
           <div className="bg-white p-6 rounded-3xl border border-outline-variant shadow-sm lg:col-span-2">
             <h3 className="font-bold font-body text-lg mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">analytics</span>
-              Detailed Topic Analysis
+              {t('safetyTwin.detailedAnalysis')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(profile.categoryScores || {}).map(([key, score]) => {
@@ -208,7 +210,7 @@ const AISafetyTwinDashboard = () => {
           {/* Bottom Row: AI Weekly Reports */}
           <div className="lg:col-span-3 mt-4">
             <div className="flex justify-between items-center mb-4">
-               <h2 className="text-2xl font-bold font-headline">Weekly AI Reports</h2>
+               <h2 className="text-2xl font-bold font-headline">{t('safetyTwin.weeklyReports')}</h2>
                <button 
                  onClick={generateWeeklyReport}
                  disabled={generatingReport}
@@ -219,12 +221,12 @@ const AISafetyTwinDashboard = () => {
                  ) : (
                    <span className="material-symbols-outlined text-[18px]">magic_button</span>
                  )}
-                 Generate New Report
+                 {t('safetyTwin.generateReport')}
                </button>
             </div>
 
             {reports.length === 0 ? (
-              <p className="text-on-surface-variant font-body">No reports generated yet.</p>
+              <p className="text-on-surface-variant font-body">{t('safetyTwin.noReports')}</p>
             ) : (
               <div className="space-y-4">
                 {reports.map((report) => (
@@ -236,9 +238,9 @@ const AISafetyTwinDashboard = () => {
                   >
                     <div className="bg-primary/10 p-4 rounded-xl text-center min-w-[120px]">
                        <span className="material-symbols-outlined text-primary text-3xl mb-1">calendar_month</span>
-                       <p className="text-xs font-bold font-body text-primary uppercase">Report</p>
+                       <p className="text-xs font-bold font-body text-primary uppercase">{t('safetyTwin.report')}</p>
                        <p className="text-[10px] text-on-surface-variant">
-                         {report.learningTimeMinutes} mins learned
+                         {report.learningTimeMinutes} {t('safetyTwin.minsLearned')}
                        </p>
                     </div>
                     
@@ -255,14 +257,14 @@ const AISafetyTwinDashboard = () => {
                        </p>
                        <div className="grid grid-cols-2 gap-4 text-sm font-body">
                          <div>
-                           <span className="text-on-surface-variant block mb-1">Strongest Area</span>
+                           <span className="text-on-surface-variant block mb-1">{t('safetyTwin.strongestArea')}</span>
                            <span className="font-bold text-green-600 flex items-center gap-1">
                              <span className="material-symbols-outlined text-[16px]">trending_up</span>
                              {report.strongestTopic}
                            </span>
                          </div>
                          <div>
-                           <span className="text-on-surface-variant block mb-1">Needs Attention</span>
+                           <span className="text-on-surface-variant block mb-1">{t('safetyTwin.needsAttention')}</span>
                            <span className="font-bold text-red-600 flex items-center gap-1">
                              <span className="material-symbols-outlined text-[16px]">trending_down</span>
                              {report.needsAttentionTopic}
@@ -273,7 +275,7 @@ const AISafetyTwinDashboard = () => {
                        <div className="mt-4 pt-4 border-t border-outline-variant">
                           <h4 className="font-bold font-body text-sm mb-1 flex items-center gap-1 text-primary">
                             <span className="material-symbols-outlined text-[16px]">psychology</span>
-                            AI Recommendation
+                            {t('safetyTwin.aiRecommendation')}
                           </h4>
                           <p className="font-body text-body-sm text-on-surface">{report.aiRecommendationText}</p>
                        </div>

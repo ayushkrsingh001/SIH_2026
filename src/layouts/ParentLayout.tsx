@@ -7,6 +7,8 @@ import { MASCOT_SMALL_URL } from '../constants';
 import { useChild } from '../contexts/ChildContext';
 import { useEffect, useState } from 'react';
 import { getParent, updateParent, subscribeToNotifications } from '../firebase/firestore';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
 
 const pageVariants = {
   initial: { opacity: 0, y: 15 },
@@ -15,6 +17,7 @@ const pageVariants = {
 } as const;
 
 export const ParentLayout = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -108,11 +111,11 @@ export const ParentLayout = () => {
   };
 
   const navItems = [
-    { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/incident-assistant', icon: 'report', label: 'Incident Assistant' },
-    { path: '/community', icon: 'forum', label: 'Community' },
-    { path: '/notifications', icon: 'notifications', label: 'Notifications', badge: unreadCount },
-    { path: '/settings', icon: 'settings', label: 'Settings' },
+    { path: '/dashboard', icon: 'dashboard', label: t('layouts.parent.dashboard') },
+    { path: '/incident-assistant', icon: 'report', label: t('layouts.parent.incidentAssistant') },
+    { path: '/community', icon: 'forum', label: t('layouts.parent.community') },
+    { path: '/notifications', icon: 'notifications', label: t('layouts.parent.notifications'), badge: unreadCount },
+    { path: '/settings', icon: 'settings', label: t('layouts.parent.settings') },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);
@@ -137,10 +140,10 @@ export const ParentLayout = () => {
               <img alt="RightsQuest Mascot" className="w-full h-full object-cover" src={MASCOT_SMALL_URL} />
             </div>
             <h2 className="text-headline-sm font-headline font-bold text-primary text-center">
-              {hasPin ? "Enter Parent PIN" : "Create Parent PIN"}
+              {hasPin ? t('layouts.parent.enterPin') : t('layouts.parent.createPin')}
             </h2>
             <p className="text-body-md text-on-surface-variant text-center mt-2">
-              {hasPin ? "Enter your 4-digit PIN to access the dashboard." : "Set a 4-digit PIN to secure the parent dashboard from your child."}
+              {hasPin ? t('layouts.parent.enterPinDesc') : t('layouts.parent.createPinDesc')}
             </p>
           </div>
 
@@ -163,14 +166,14 @@ export const ParentLayout = () => {
               disabled={pinInput.length !== 4}
               className="bg-primary text-on-primary py-3 rounded-xl font-bold mt-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {hasPin ? "Unlock" : "Set PIN"}
+              {hasPin ? t('layouts.parent.unlock') : t('layouts.parent.setPin')}
             </button>
             <button 
               type="button"
               onClick={handleLogout}
               className="text-on-surface-variant py-2 rounded-xl text-label-md mt-2 hover:bg-surface-container transition-colors"
             >
-              Log Out
+              {t('layouts.parent.logOut')}
             </button>
           </form>
         </div>
@@ -199,7 +202,8 @@ export const ParentLayout = () => {
               RightsQuest
             </Link>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <LanguageSwitcher />
             <button onClick={handleLogout} className="text-on-surface-variant hover:text-primary transition-colors" aria-label="Logout">
               <span className="material-symbols-outlined">logout</span>
             </button>
@@ -257,7 +261,7 @@ export const ParentLayout = () => {
                 }`}
               >
                 <span className="material-symbols-outlined">admin_panel_settings</span>
-                <span className="font-body text-body-md font-semibold">Admin</span>
+                <span className="font-body text-body-md font-semibold">{t('layouts.parent.admin')}</span>
               </Link>
             </li>
           )}
@@ -265,9 +269,12 @@ export const ParentLayout = () => {
 
         <ul className="flex flex-col gap-2 mt-auto">
           <li>
+            <div className="px-4 py-2 mx-2">
+              <LanguageSwitcher align="left" />
+            </div>
             <button onClick={handleLogout} className="flex items-center gap-4 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 px-4 py-3 transition-all w-full text-left">
               <span className="material-symbols-outlined">logout</span>
-              <span className="font-body text-body-md font-semibold">Log Out</span>
+              <span className="font-body text-body-md font-semibold">{t('layouts.parent.logOut')}</span>
             </button>
           </li>
         </ul>

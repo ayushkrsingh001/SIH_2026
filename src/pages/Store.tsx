@@ -7,6 +7,7 @@ import { AVATAR_OPTIONS, PREMIUM_AVATARS } from '../constants';
 import { resolveAvatarUrl } from '../utils/avatar';
 import { staggerItem, bounceIn } from '../animations/variants';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const TITLES = [
   { id: 't1', name: 'Rookie Explorer', cost: 50 },
@@ -27,6 +28,7 @@ const TITLES = [
 ];
 
 const Store = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild, setActiveChild } = useChild();
   const [tab, setTab] = useState<'avatars' | 'titles'>('avatars');
@@ -38,7 +40,7 @@ const Store = () => {
 
   const handlePurchaseTitle = async (titleId: string, cost: number) => {
     if (activeChild.coins < cost) {
-      toast.error("Not enough coins!");
+      toast.error(t('store.notEnoughCoins'));
       return;
     }
     setPurchasing(true);
@@ -47,9 +49,9 @@ const Store = () => {
       const newTitles = [...(activeChild.unlockedTitles || []), titleId];
       await updateChild(user.uid, activeChild.id!, { coins: newCoins, unlockedTitles: newTitles, currentTitle: titleId });
       setActiveChild({ ...activeChild, coins: newCoins, unlockedTitles: newTitles, currentTitle: titleId });
-      toast.success("Title unlocked and equipped!");
+      toast.success(t('store.titleUnlocked'));
     } catch {
-      toast.error("Purchase failed");
+      toast.error(t('store.purchaseFailed'));
     } finally {
       setPurchasing(false);
     }
@@ -59,15 +61,15 @@ const Store = () => {
     try {
       await updateChild(user.uid, activeChild.id!, { currentTitle: titleId });
       setActiveChild({ ...activeChild, currentTitle: titleId });
-      toast.success("Title equipped!");
+      toast.success(t('store.titleEquipped'));
     } catch {
-      toast.error("Failed to equip");
+      toast.error(t('store.failedEquip'));
     }
   };
 
   const handlePurchaseAvatar = async (avatarId: string, cost: number) => {
     if (activeChild.coins < cost) {
-      toast.error("Not enough coins!");
+      toast.error(t('store.notEnoughCoins'));
       return;
     }
     setPurchasing(true);
@@ -76,9 +78,9 @@ const Store = () => {
       const newAvatars = [...(activeChild.unlockedAvatarIds || []), avatarId];
       await updateChild(user.uid, activeChild.id!, { coins: newCoins, unlockedAvatarIds: newAvatars, avatarId });
       setActiveChild({ ...activeChild, coins: newCoins, unlockedAvatarIds: newAvatars, avatarId });
-      toast.success("Avatar unlocked and equipped!");
+      toast.success(t('store.avatarUnlocked'));
     } catch {
-      toast.error("Purchase failed");
+      toast.error(t('store.purchaseFailed'));
     } finally {
       setPurchasing(false);
     }
@@ -88,9 +90,9 @@ const Store = () => {
     try {
       await updateChild(user.uid, activeChild.id!, { avatarId });
       setActiveChild({ ...activeChild, avatarId });
-      toast.success("Avatar equipped!");
+      toast.success(t('store.avatarEquipped'));
     } catch {
-      toast.error("Failed to equip");
+      toast.error(t('store.failedEquip'));
     }
   };
 
@@ -98,8 +100,8 @@ const Store = () => {
     <div className="max-w-4xl mx-auto pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="font-headline text-headline-md text-on-surface">Rewards Store</h1>
-          <p className="font-body text-body-md text-on-surface-variant">Spend your hard-earned coins!</p>
+          <h1 className="font-headline text-headline-md text-on-surface">{t('store.rewardsStore')}</h1>
+          <p className="font-body text-body-md text-on-surface-variant">{t('store.spendCoins')}</p>
         </div>
         <motion.div 
           className="bg-primary-container rounded-full px-6 py-3 flex items-center gap-3 shadow-sm"
@@ -108,7 +110,7 @@ const Store = () => {
           animate="animate"
         >
           <span className="material-symbols-outlined text-primary text-2xl filled">monetization_on</span>
-          <span className="font-headline text-title-lg text-on-primary-container">{activeChild.coins} Coins</span>
+          <span className="font-headline text-title-lg text-on-primary-container">{t('store.coins', { coins: activeChild.coins })}</span>
         </motion.div>
       </div>
 
@@ -117,14 +119,14 @@ const Store = () => {
           onClick={() => setTab('avatars')}
           className={`pb-4 font-headline text-title-lg px-4 transition-colors relative ${tab === 'avatars' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
         >
-          Avatars
+          {t('store.avatars')}
           {tab === 'avatars' && <motion.div layoutId="storeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary rounded-t-full" />}
         </button>
         <button
           onClick={() => setTab('titles')}
           className={`pb-4 font-headline text-title-lg px-4 transition-colors relative ${tab === 'titles' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
         >
-          Titles
+          {t('store.titles')}
           {tab === 'titles' && <motion.div layoutId="storeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary rounded-t-full" />}
         </button>
       </div>
@@ -140,7 +142,7 @@ const Store = () => {
           {tab === 'avatars' ? (
             <div>
               <div className="bg-surface-container-lowest rounded-[32px] p-6 shadow-card mb-10 border border-outline-variant/30">
-                <h2 className="font-headline text-title-lg text-on-surface mb-4">Create Custom Avatar</h2>
+                <h2 className="font-headline text-title-lg text-on-surface mb-4">{t('store.createCustomAvatar')}</h2>
                 <div className="flex flex-col md:flex-row gap-6 items-center">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary bg-cream shrink-0 shadow-sm">
                      <img src={`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}&backgroundColor=b6e3f4`} alt="Preview" className="w-full h-full object-cover" />
@@ -152,17 +154,17 @@ const Store = () => {
                          onChange={e => setCustomStyle(e.target.value)}
                          className="p-4 rounded-xl border-2 border-surface-dim bg-surface-bright font-body text-body-md focus:border-primary outline-none"
                        >
-                         <option value="bottts">Robots</option>
-                         <option value="adventurer">Adventurer</option>
-                         <option value="fun-emoji">Emoji</option>
-                         <option value="avataaars">People</option>
+                         <option value="bottts">{t('store.robots')}</option>
+                         <option value="adventurer">{t('store.adventurer')}</option>
+                         <option value="fun-emoji">{t('store.emoji')}</option>
+                         <option value="avataaars">{t('store.people')}</option>
                        </select>
                        <input 
                          type="text" 
                          value={customSeed}
                          onChange={e => setCustomSeed(e.target.value)}
                          className="flex-grow p-4 rounded-xl border-2 border-surface-dim bg-surface-bright font-body text-body-md focus:border-primary outline-none"
-                         placeholder="Type a name..."
+                         placeholder={t('store.typeName')}
                        />
                      </div>
                      <button 
@@ -170,13 +172,13 @@ const Store = () => {
                        onClick={() => handlePurchaseAvatar(`https://api.dicebear.com/7.x/${customStyle}/svg?seed=${customSeed}&backgroundColor=b6e3f4`, 100)}
                        className="bg-primary text-on-primary px-6 py-4 rounded-full font-headline text-title-md w-full disabled:opacity-50 btn-tactile border-b-4 border-on-primary-fixed-variant"
                      >
-                       Unlock & Equip Custom Avatar (100 Coins)
+                       {t('store.unlockCustomAvatar')}
                      </button>
                   </div>
                 </div>
               </div>
 
-              <h2 className="font-headline text-title-lg text-on-surface mb-4">Premium Avatars</h2>
+              <h2 className="font-headline text-title-lg text-on-surface mb-4">{t('store.premiumAvatars')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                 {PREMIUM_AVATARS.map(avatar => {
                   const isUnlocked = activeChild.unlockedAvatarIds?.includes(avatar.id);
@@ -190,9 +192,9 @@ const Store = () => {
                       <h3 className="font-headline text-title-md text-on-surface mb-2">{avatar.name}</h3>
                       
                       {isEquipped ? (
-                        <span className="text-secondary font-bold font-body text-label-md flex items-center gap-1"><span className="material-symbols-outlined text-sm">check_circle</span> Equipped</span>
+                        <span className="text-secondary font-bold font-body text-label-md flex items-center gap-1"><span className="material-symbols-outlined text-sm">check_circle</span> {t('store.equipped')}</span>
                       ) : isUnlocked ? (
-                        <button onClick={() => handleEquipAvatar(avatar.id)} className="bg-surface-container-high text-on-surface px-4 py-2 rounded-full font-body text-label-md hover:bg-surface-variant transition-colors w-full">Equip</button>
+                        <button onClick={() => handleEquipAvatar(avatar.id)} className="bg-surface-container-high text-on-surface px-4 py-2 rounded-full font-body text-label-md hover:bg-surface-variant transition-colors w-full">{t('store.equip')}</button>
                       ) : (
                         <button 
                           disabled={purchasing || activeChild.coins < avatar.cost}
@@ -200,7 +202,7 @@ const Store = () => {
                           className="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-body text-label-md btn-tactile-primary flex items-center justify-center gap-1 w-full disabled:opacity-50"
                         >
                           <span className="material-symbols-outlined text-[16px]">lock_open</span>
-                          {avatar.cost} Coins
+                          {t('store.coinsCost', { cost: avatar.cost })}
                         </button>
                       )}
                     </motion.div>
@@ -208,7 +210,7 @@ const Store = () => {
                 })}
               </div>
 
-              <h2 className="font-headline text-title-lg text-on-surface mt-10 mb-4">Basic Avatars (Free)</h2>
+              <h2 className="font-headline text-title-lg text-on-surface mt-10 mb-4">{t('store.basicAvatars')}</h2>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
                 {AVATAR_OPTIONS.map(avatar => {
                   const isEquipped = activeChild.avatarId === avatar.id;
@@ -225,35 +227,35 @@ const Store = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {TITLES.map(t => {
-                const isUnlocked = activeChild.unlockedTitles?.includes(t.id);
-                const isEquipped = activeChild.currentTitle === t.id;
+              {TITLES.map(title => {
+                const isUnlocked = activeChild.unlockedTitles?.includes(title.id);
+                const isEquipped = activeChild.currentTitle === title.id;
                 
                 return (
-                  <div key={t.id} className="bg-surface-container-lowest rounded-[24px] p-4 sm:p-6 shadow-card flex items-center justify-between gap-4">
+                  <div key={title.id} className="bg-surface-container-lowest rounded-[24px] p-4 sm:p-6 shadow-card flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-tertiary-fixed/30 flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-tertiary-fixed-dim">workspace_premium</span>
                       </div>
                       <div>
-                        <h3 className="font-headline text-title-lg text-on-surface">{t.name}</h3>
-                        <p className="font-body text-caption text-on-surface-variant">Display this title under your name</p>
+                        <h3 className="font-headline text-title-lg text-on-surface">{t(`store.titleNames.${title.id}`)}</h3>
+                        <p className="font-body text-caption text-on-surface-variant">{t('store.displayTitle')}</p>
                       </div>
                     </div>
                     
                     <div className="shrink-0">
                       {isEquipped ? (
-                        <span className="text-secondary font-bold font-body text-label-md px-4 py-2 flex items-center gap-1"><span className="material-symbols-outlined text-sm">check_circle</span> Equipped</span>
+                        <span className="text-secondary font-bold font-body text-label-md px-4 py-2 flex items-center gap-1"><span className="material-symbols-outlined text-sm">check_circle</span> {t('store.equipped')}</span>
                       ) : isUnlocked ? (
-                        <button onClick={() => handleEquipTitle(t.id)} className="bg-surface-container-high text-on-surface px-6 py-2 rounded-full font-body text-label-md hover:bg-surface-variant transition-colors">Equip</button>
+                        <button onClick={() => handleEquipTitle(title.id)} className="bg-surface-container-high text-on-surface px-6 py-2 rounded-full font-body text-label-md hover:bg-surface-variant transition-colors">{t('store.equip')}</button>
                       ) : (
                         <button 
-                          disabled={purchasing || activeChild.coins < t.cost}
-                          onClick={() => handlePurchaseTitle(t.id, t.cost)}
+                          disabled={purchasing || activeChild.coins < title.cost}
+                          onClick={() => handlePurchaseTitle(title.id, title.cost)}
                           className="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-body text-label-md btn-tactile-primary flex items-center gap-2 disabled:opacity-50"
                         >
                           <span className="material-symbols-outlined text-[16px]">lock_open</span>
-                          {t.cost} Coins
+                          {t('store.coinsCost', { cost: title.cost })}
                         </button>
                       )}
                     </div>

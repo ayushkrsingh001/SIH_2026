@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
@@ -11,9 +10,12 @@ import { PageSkeleton } from '../components/ui/SkeletonLoader';
 import { generateMapNodes, generateSvgPath } from '../utils/mapGenerator';
 import type { MapNode } from '../utils/mapGenerator';
 import type { Module, Progress } from '../types';
-import { allLocalModules } from '../data';
+import { useTranslation } from 'react-i18next';
+import { useGameData } from '../hooks/useGameData';
 
 const WorldMap = () => {
+  const { t } = useTranslation();
+  const { modules: allLocalModules } = useGameData();
   const { user } = useAuth();
   const { activeChild, setActiveChild } = useChild();
   const navigate = useNavigate();
@@ -42,7 +44,7 @@ const WorldMap = () => {
       setLoading(false);
     };
     loadData();
-  }, [user, childId, activeChild, setActiveChild, navigate]);
+  }, [user, childId, activeChild, setActiveChild, navigate, allLocalModules]);
 
   const getModuleStatus = (moduleId: string, prerequisiteModuleId: string | null) => {
     const moduleProgress = progress.find(p => p.moduleId === moduleId);
@@ -144,17 +146,17 @@ const WorldMap = () => {
             <img src={avatar.imageUrl} alt={activeChild?.displayName} className="w-full h-full object-cover" />
           </div>
           <div>
-            <h2 className="font-headline text-title-lg text-on-surface">{activeChild?.displayName}'s Quest Map</h2>
-            <p className="font-body text-caption text-primary">Level {levelInfo.level} {levelInfo.title} · {activeChild?.xp?.toLocaleString()} XP</p>
+            <h2 className="font-headline text-title-lg text-on-surface">{t('worldMap.questMap', { name: activeChild?.displayName })}</h2>
+            <p className="font-body text-caption text-primary">{t('worldMap.level')} {levelInfo.level} {levelInfo.title} · {activeChild?.xp?.toLocaleString()} {t('worldMap.xp')}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="bg-surface-container-lowest rounded-full px-4 py-2 shadow-card flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary text-sm filled">emoji_events</span>
-            <span className="font-body text-label-md text-on-surface">{completedCount}/{modules.length} Complete</span>
+            <span className="font-body text-label-md text-on-surface">{completedCount}/{modules.length} {t('worldMap.complete')}</span>
           </div>
           <div className="w-32">
-            <div className="font-body text-caption text-on-surface-variant mb-1">Next Level</div>
+            <div className="font-body text-caption text-on-surface-variant mb-1">{t('worldMap.nextLevel')}</div>
             <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-secondary rounded-full"
@@ -249,7 +251,7 @@ const WorldMap = () => {
                     <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
                       <div className="w-16 h-16 md:w-20 md:h-20 bg-secondary-container rounded-2xl floating-shadow flex flex-col items-center justify-center border-2 border-secondary transition-transform group-hover:-translate-y-2 group-hover:active-shadow z-10">
                         <span className="material-symbols-outlined text-3xl md:text-4xl text-secondary mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
-                        <div className="bg-secondary text-on-secondary font-caption px-2 py-0.5 rounded-full text-[8px] uppercase font-bold tracking-wider absolute -bottom-2">Completed</div>
+                        <div className="bg-secondary text-on-secondary font-caption px-2 py-0.5 rounded-full text-[8px] uppercase font-bold tracking-wider absolute -bottom-2">{t('worldMap.completed')}</div>
                       </div>
                       {/* Decorative elements */}
                       <div className="absolute -right-2 top-2 w-4 h-4 bg-white rounded-full opacity-60"></div>
@@ -282,7 +284,7 @@ const WorldMap = () => {
                     </div>
                     <div className="text-center mt-3 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-primary-container shadow-md mx-auto min-w-[140px] max-w-[170px] transform transition-transform hover:scale-105">
                       <h3 className="font-headline font-bold text-primary text-sm md:text-base leading-tight drop-shadow-sm">{mod.title}</h3>
-                      <div className="font-body font-bold text-secondary text-[10px] uppercase tracking-wider mt-1">Level {idx + 1} of {modules.length}</div>
+                      <div className="font-body font-bold text-secondary text-[10px] uppercase tracking-wider mt-1">{t('worldMap.levelXofY', { x: idx + 1, y: modules.length })}</div>
                     </div>
                   </>
                 )}
@@ -297,7 +299,7 @@ const WorldMap = () => {
                     <div className="text-center mt-2 bg-surface/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-outline-variant/30 shadow-sm mx-auto min-w-[110px] max-w-[130px]">
                       <h3 className="font-headline font-medium text-on-surface-variant text-xs md:text-sm leading-tight">{mod.title}</h3>
                       <div className="font-body text-outline text-[10px] uppercase tracking-wider mt-1 flex items-center justify-center gap-1">
-                        <span className="material-symbols-outlined text-[12px]">lock</span> Locked
+                        <span className="material-symbols-outlined text-[12px]">lock</span> {t('worldMap.locked')}
                       </div>
                     </div>
                   </>
@@ -325,7 +327,7 @@ const WorldMap = () => {
         >
           auto_awesome
         </motion.span>
-        <span className="font-headline text-label-lg">AI Adventures</span>
+        <span className="font-headline text-label-lg">{t('worldMap.aiAdventures')}</span>
       </motion.button>
     </div>
   );

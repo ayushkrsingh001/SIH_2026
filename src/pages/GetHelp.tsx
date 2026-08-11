@@ -13,6 +13,7 @@ import { fadeInUp } from '../animations/variants';
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
 import type { Organization } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface HelpForm {
   category: 'bullying' | 'safety' | 'rights_question' | 'other';
@@ -21,6 +22,7 @@ interface HelpForm {
 }
 
 const GetHelp = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild } = useChild();
   const { childId } = useParams();
@@ -63,10 +65,10 @@ const GetHelp = () => {
       setAiResponse(aiResult);
 
       setSubmitted(true);
-      toast.success('Your request has been submitted safely.');
+      toast.success(t('help.successSubmittedSafely'));
     } catch (err) {
       console.error(err);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(t('help.errorSomethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -83,23 +85,23 @@ const GetHelp = () => {
         <div className="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center mx-auto mb-6">
           <span className="material-symbols-outlined text-secondary text-4xl filled">check_circle</span>
         </div>
-        <h1 className="font-headline text-headline-md text-on-surface mb-4">Help is on the way!</h1>
+        <h1 className="font-headline text-headline-md text-on-surface mb-4">{t('help.helpIsOnTheWay')}</h1>
         <p className="font-body text-body-lg text-on-surface-variant mb-8">
-          Your request has been received. A trusted adult will review it soon. You are not alone.
+          {t('help.helpReceivedDesc')}
         </p>
 
         {aiResponse && (
           <div className="bg-primary-container/20 border-2 border-primary-container rounded-[24px] p-6 text-left mb-8 flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <img src={MASCOT_SMALL_URL} alt="Mascot" className="w-12 h-12 rounded-full" />
-              <h3 className="font-headline text-title-lg text-primary">A message for you</h3>
+              <h3 className="font-headline text-title-lg text-primary">{t('help.aMessageForYou')}</h3>
             </div>
             <p className="font-body text-body-md text-on-surface whitespace-pre-wrap">
               {aiResponse.suggestion}
             </p>
             {aiResponse.actionableSteps && aiResponse.actionableSteps.length > 0 && (
               <div className="mt-2 space-y-2">
-                <p className="font-headline text-label-lg text-primary">What you can do right now:</p>
+                <p className="font-headline text-label-lg text-primary">{t('help.whatYouCanDo')}</p>
                 <ul className="space-y-2">
                   {aiResponse.actionableSteps.map((step, idx) => (
                     <li key={idx} className="flex items-start gap-2">
@@ -117,7 +119,7 @@ const GetHelp = () => {
           <div className="bg-surface-container-lowest rounded-[24px] shadow-card p-6 text-left mb-8">
             <h3 className="font-headline text-title-lg text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">call</span>
-              You can also contact
+              {t('help.contactAlso')}
             </h3>
             <div className="space-y-3">
               {organizations.slice(0, 3).map(org => (
@@ -139,7 +141,7 @@ const GetHelp = () => {
           onClick={() => navigate(`/play/${childId}/map`)}
           className="bg-primary-container text-on-primary-container font-headline text-title-lg px-8 py-4 rounded-full btn-tactile-primary"
         >
-          Back to Quest Map
+          {t('help.backToQuestMap')}
         </button>
       </motion.div>
     );
@@ -155,32 +157,32 @@ const GetHelp = () => {
         <div className="flex items-center gap-3 mb-6">
           <img src={MASCOT_SMALL_URL} alt="Mascot" className="w-12 h-12 rounded-full" />
           <div>
-            <h1 className="font-headline text-headline-md-mobile text-on-surface">Need Help?</h1>
-            <p className="font-body text-body-md text-on-surface-variant">We're here for you. Everything is safe and private.</p>
+            <h1 className="font-headline text-headline-md-mobile text-on-surface">{t('help.needHelpTitle')}</h1>
+            <p className="font-body text-body-md text-on-surface-variant">{t('help.needHelpSubtitle')}</p>
           </div>
         </div>
 
         <div className="bg-secondary-container/20 rounded-[16px] p-4 mb-6 flex items-start gap-3">
           <span className="material-symbols-outlined text-secondary filled">shield</span>
           <p className="font-body text-caption text-on-secondary-container">
-            Your message will go to a trusted adult. No other kids will see this.
+            {t('help.safeMessageDesc')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block font-body text-label-md text-on-surface-variant mb-2">What's this about?</label>
+            <label className="block font-body text-label-md text-on-surface-variant mb-2">{t('help.whatsThisAbout')}</label>
             <div className="grid grid-cols-2 gap-3">
               {HELP_CATEGORIES.map(cat => (
                 <label
                   key={cat.value}
                   className="flex items-center gap-2 p-3 rounded-[12px] border-2 border-surface-dim cursor-pointer hover:border-primary transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-fixed/10"
                 >
-                  <input {...register('category', { required: 'Please select a category' })} type="radio" value={cat.value} className="hidden" />
+                  <input {...register('category', { required: t('help.errorSelectCategory') })} type="radio" value={cat.value} className="hidden" />
                   <span className="material-symbols-outlined text-sm text-primary">
                     {cat.value === 'bullying' ? 'person_off' : cat.value === 'safety' ? 'health_and_safety' : cat.value === 'rights_question' ? 'gavel' : 'help'}
                   </span>
-                  <span className="font-body text-label-md text-on-surface">{cat.label}</span>
+                  <span className="font-body text-label-md text-on-surface">{t(`help.categories.${cat.value}`)}</span>
                 </label>
               ))}
             </div>
@@ -188,21 +190,21 @@ const GetHelp = () => {
           </div>
 
           <div>
-            <label className="block font-body text-label-md text-on-surface-variant mb-2" htmlFor="helpMessage">Tell us more</label>
+            <label className="block font-body text-label-md text-on-surface-variant mb-2" htmlFor="helpMessage">{t('help.tellUsMore')}</label>
             <textarea
-              {...register('message', { required: 'Please describe what happened', minLength: { value: 10, message: 'Please write a bit more' } })}
+              {...register('message', { required: t('help.errorDescribeWhatHappened'), minLength: { value: 10, message: t('help.errorWriteMore') } })}
               className="w-full p-4 rounded-lg border-2 border-surface-dim tactile-input font-body text-body-md bg-surface-bright resize-none h-32"
               id="helpMessage"
-              placeholder="What happened? How can we help?"
+              placeholder={t('help.messagePlaceholder')}
             />
-            {errors.message && <p className="text-caption text-error mt-1">{errors.message.message}</p>}
+            {errors.message && <p className="text-caption text-error mt-1">{errors.message.message as string}</p>}
           </div>
 
           <label className="flex items-center gap-3 p-3 rounded-[12px] bg-surface-container-low cursor-pointer">
             <input {...register('anonymous')} type="checkbox" className="w-5 h-5 rounded accent-primary" />
             <div>
-              <span className="font-body text-label-md text-on-surface">Submit anonymously</span>
-              <p className="font-body text-caption text-on-surface-variant">Your name won't be attached to this request</p>
+              <span className="font-body text-label-md text-on-surface">{t('help.submitAnonymously')}</span>
+              <p className="font-body text-caption text-on-surface-variant">{t('help.submitAnonymouslyDesc')}</p>
             </div>
           </label>
 
@@ -216,7 +218,7 @@ const GetHelp = () => {
             ) : (
               <>
                 <span className="material-symbols-outlined">send</span>
-                Send Help Request
+                {t('help.sendHelpRequest')}
               </>
             )}
           </button>

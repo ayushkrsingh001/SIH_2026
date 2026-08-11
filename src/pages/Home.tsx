@@ -2,28 +2,36 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '../animations/variants';
 import { MASCOT_URL } from '../constants';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
 
 const Home = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-cream font-body text-on-surface overflow-x-hidden">
       {/* Top Navigation */}
       <nav className="hidden md:flex justify-between items-center w-full px-gutter py-4 w-full bg-cream sticky top-0 z-50">
         <div className="font-headline text-headline-md font-extrabold text-primary tracking-tight">RightsQuest</div>
         <ul className="flex space-x-8">
-          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#how-it-works">How it Works</a></li>
-          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#features">Features</a></li>
-          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#safety">Safety</a></li>
+          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#how-it-works">{t('navbar.howItWorks')}</a></li>
+          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#features">{t('navbar.features')}</a></li>
+          <li><a className="font-body text-label-md text-on-surface-variant hover:text-primary transition-colors pb-1" href="#safety">{t('navbar.safety')}</a></li>
         </ul>
-        <div className="flex space-x-4">
-          <Link to="/login" className="font-body text-label-md text-primary hover:bg-primary-container/20 px-6 py-2 rounded-full transition-colors">Log In</Link>
-          <Link to="/signup" className="font-body text-label-md bg-primary-container text-on-primary-container px-6 py-2 rounded-full btn-tactile-primary">Sign Up Free</Link>
+        <div className="flex items-center space-x-4">
+          <LanguageSwitcher />
+          <Link to="/login" className="font-body text-label-md text-primary hover:bg-primary-container/20 px-6 py-2 rounded-full transition-colors">{t('navbar.logIn')}</Link>
+          <Link to="/signup" className="font-body text-label-md bg-primary-container text-on-primary-container px-6 py-2 rounded-full btn-tactile-primary">{t('navbar.signUpFree')}</Link>
         </div>
       </nav>
 
       {/* Mobile Header */}
       <header className="md:hidden flex justify-between items-center w-full px-4 py-4 bg-cream sticky top-0 z-50 shadow-card">
         <div className="font-headline text-headline-md-mobile font-extrabold text-primary tracking-tight">RightsQuest</div>
-        <Link to="/login" className="font-body text-label-md bg-primary-container text-on-primary-container px-4 py-2 rounded-full btn-tactile-primary">Log In</Link>
+        <div className="flex items-center space-x-2">
+          <LanguageSwitcher />
+          <Link to="/login" className="font-body text-label-md bg-primary-container text-on-primary-container px-4 py-2 rounded-full btn-tactile-primary">{t('navbar.logIn')}</Link>
+        </div>
       </header>
 
       <main className="w-full">
@@ -38,14 +46,14 @@ const Home = () => {
               animate="animate"
             >
               <motion.div variants={staggerItem} className="inline-flex items-center space-x-2 bg-secondary-container/30 px-4 py-2 rounded-full w-fit">
-                <span className="material-symbols-outlined text-secondary text-sm filled">verified</span>
-                <span className="font-body text-label-md text-secondary">Trusted by 10,000+ Parents</span>
+                <span className="material-symbols-outlined text-secondary text-sm filled">gavel</span>
+                <span className="font-body text-label-md text-secondary">{t('home.trustedBy')}</span>
               </motion.div>
 
               <motion.h1 variants={staggerItem} className="font-headline text-display-lg-mobile md:text-display-lg text-on-surface">
-                Empower your child with{' '}
+                {t('home.heroTitle1')}
                 <span className="text-primary relative inline-block">
-                  legal literacy
+                  {t('home.heroTitleHighlight')}
                   <svg className="absolute -bottom-2 left-0 w-full h-3 text-tertiary-fixed" preserveAspectRatio="none" viewBox="0 0 100 10">
                     <path d="M0 5 Q 50 10 100 5" fill="transparent" stroke="currentColor" strokeWidth="4" />
                   </svg>
@@ -53,23 +61,23 @@ const Home = () => {
               </motion.h1>
 
               <motion.p variants={staggerItem} className="font-body text-body-lg text-on-surface-variant max-w-lg">
-                RightsQuest transforms complex legal concepts into fun, engaging quests for kids aged 8-16. Build their confidence and understanding of their rights in a safe, gamified environment.
+                {t('home.heroDesc')}
               </motion.p>
 
               <motion.div variants={staggerItem} className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
                 <Link to="/signup" className="btn-tactile-primary bg-primary-container text-on-primary-container font-headline text-title-lg px-8 py-4 rounded-full flex items-center justify-center space-x-2 w-full sm:w-auto shadow-card hover:shadow-card-hover transition-shadow">
-                  <span>Get Started Free</span>
+                  <span>{t('home.getStartedFree')}</span>
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
                 <a href="#how-it-works" className="bg-surface border-2 border-outline-variant text-on-surface font-headline text-title-lg px-8 py-4 rounded-full flex items-center justify-center w-full sm:w-auto hover:bg-surface-container-high transition-colors">
-                  How it works
+                  {t('home.howItWorksBtn')}
                 </a>
               </motion.div>
 
               <motion.div variants={staggerItem} className="flex items-center space-x-4 pt-6 opacity-70">
-                <span className="font-body text-caption text-on-surface-variant uppercase tracking-wider">Backed by</span>
+                <span className="font-body text-caption text-on-surface-variant uppercase tracking-wider">{t('home.backedBy')}</span>
                 <div className="h-8 w-auto px-3 bg-surface-variant rounded-md flex items-center justify-center">
-                  <span className="font-body text-caption text-outline">Ministry of Law & Justice</span>
+                  <span className="font-body text-caption text-outline">{t('home.ministry')}</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -96,7 +104,7 @@ const Home = () => {
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                Ready for an adventure?
+                {t('home.speechBubble')}
               </motion.div>
             </motion.div>
           </div>
@@ -105,15 +113,15 @@ const Home = () => {
         {/* How it Works Section */}
         <section id="how-it-works" className="w-full px-4 md:px-gutter py-xl">
           <motion.div className="text-center mb-12" variants={fadeInUp} initial="initial" whileInView="animate" viewport={{ once: true }}>
-            <h2 className="font-headline text-display-lg-mobile md:text-headline-md text-on-surface mb-4">Learning that feels like playing</h2>
-            <p className="font-body text-body-lg text-on-surface-variant max-w-2xl mx-auto">We've broken down essential legal concepts into three simple, engaging steps.</p>
+            <h2 className="font-headline text-display-lg-mobile md:text-headline-md text-on-surface mb-4">{t('home.howItWorksTitle')}</h2>
+            <p className="font-body text-body-lg text-on-surface-variant max-w-2xl mx-auto">{t('home.howItWorksDesc')}</p>
           </motion.div>
 
           <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true }}>
             {[
-              { icon: 'menu_book', title: '1. Bite-Sized Lessons', desc: 'Complex topics like privacy, contracts, and digital rights are translated into simple, kid-friendly stories.', color: 'primary-fixed', iconColor: 'primary' },
-              { icon: 'videogame_asset', title: '2. Interactive Quests', desc: 'Apply knowledge immediately through scenario-based games. Make choices and see the consequences in a safe space.', color: 'secondary-container', iconColor: 'secondary' },
-              { icon: 'military_tech', title: '3. Earn Rewards', desc: 'Collect badges, level up, and unlock new customizations for their personal avatar as they master new topics.', color: 'tertiary-fixed', iconColor: 'tertiary' },
+              { icon: 'menu_book', title: t('home.step1Title'), desc: t('home.step1Desc'), color: 'primary-fixed', iconColor: 'primary' },
+              { icon: 'videogame_asset', title: t('home.step2Title'), desc: t('home.step2Desc'), color: 'secondary-container', iconColor: 'secondary' },
+              { icon: 'military_tech', title: t('home.step3Title'), desc: t('home.step3Desc'), color: 'tertiary-fixed', iconColor: 'tertiary' },
             ].map(step => (
               <motion.div
                 key={step.title}
@@ -139,12 +147,12 @@ const Home = () => {
             <div className="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mx-auto mb-6">
               <span className="material-symbols-outlined text-secondary text-3xl filled">verified_user</span>
             </div>
-            <h2 className="font-headline text-headline-md text-on-surface mb-4">Safety by Design</h2>
+            <h2 className="font-headline text-headline-md text-on-surface mb-4">{t('home.safetyTitle')}</h2>
             <p className="font-body text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-8">
-              No direct messaging between users. All content is moderated. Children's personal data is never collected. Every support request goes through structured, safe channels.
+              {t('home.safetyDesc')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              {['Zero unmoderated channels', 'Data minimization', 'Parental oversight'].map(item => (
+              {[t('home.safetyFeature1'), t('home.safetyFeature2'), t('home.safetyFeature3')].map(item => (
                 <div key={item} className="flex items-center gap-2 justify-center bg-surface rounded-full px-4 py-2">
                   <span className="material-symbols-outlined text-secondary text-sm filled">check_circle</span>
                   <span className="font-body text-label-md text-on-surface">{item}</span>
@@ -158,13 +166,13 @@ const Home = () => {
         <section className="w-full px-4 md:px-gutter py-xl text-center">
           <motion.div variants={fadeInUp} initial="initial" whileInView="animate" viewport={{ once: true }}>
             <h2 className="font-headline text-display-lg-mobile md:text-headline-md text-on-surface mb-4">
-              Start your child's rights journey today
+              {t('home.ctaTitle')}
             </h2>
             <p className="font-body text-body-lg text-on-surface-variant max-w-xl mx-auto mb-8">
-              Join thousands of parents who trust RightsQuest to educate and empower their children.
+              {t('home.ctaDesc')}
             </p>
             <Link to="/signup" className="inline-flex items-center gap-2 bg-primary-container text-on-primary-container font-headline text-title-lg px-10 py-4 rounded-full btn-tactile-primary shadow-card hover:shadow-card-hover transition-shadow">
-              Create Free Account
+              {t('home.createAccountBtn')}
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </motion.div>
@@ -175,10 +183,10 @@ const Home = () => {
       <footer className="bg-surface-container py-8 px-4 md:px-gutter mt-xl">
         <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="font-headline text-title-lg font-bold text-primary">RightsQuest</div>
-          <p className="font-body text-caption text-on-surface-variant">© 2026 RightsQuest — SIH 2026. Built for children's rights awareness.</p>
+          <p className="font-body text-caption text-on-surface-variant">{t('footer.copyright')}</p>
           <div className="flex gap-6">
-            <a href="#" className="font-body text-caption text-on-surface-variant hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="#" className="font-body text-caption text-on-surface-variant hover:text-primary transition-colors">Terms</a>
+            <Link to="/privacy" className="font-body text-caption text-on-surface-variant hover:text-primary transition-colors">{t('footer.privacy')}</Link>
+            <Link to="/terms" className="font-body text-caption text-on-surface-variant hover:text-primary transition-colors">{t('footer.terms')}</Link>
           </div>
         </div>
       </footer>

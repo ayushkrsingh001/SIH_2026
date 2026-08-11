@@ -6,9 +6,8 @@ import { subscribeToStories, createRealStory, toggleStoryLike, checkStoryLiked, 
 import { toggleBookmark, checkBookmarked } from '../../firebase/communityFirestore';
 import { groqService } from '../../services/groqService';
 import { uploadMedia } from '../../firebase/storage';
-import { STORY_TYPE_META, COMMUNITY_CATEGORIES, getCategoryById } from '../../constants';
+import { STORY_TYPE_META, COMMUNITY_CATEGORIES } from '../../constants';
 import { VerifiedBadge } from './VerifiedBadge';
-import { CategoryChip } from './CategoryChip';
 import type { CommunityCategoryId } from '../../types';
 import toast from 'react-hot-toast';
 
@@ -79,7 +78,7 @@ export const RealStoriesSection = () => {
 
   const handleLike = async (story: RealStory) => {
     if (!user) return;
-    const isLiked = await toggleStoryLike(story.id!, user.uid, story.authorId, user.displayName || 'Parent');
+    const isLiked = await toggleStoryLike(story.id!, user.uid);
     if (isLiked) setLikedIds(prev => new Set([...prev, story.id!]));
     else setLikedIds(prev => { const n = new Set(prev); n.delete(story.id!); return n; });
   };

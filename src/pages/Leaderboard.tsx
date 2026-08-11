@@ -5,8 +5,10 @@ import { calculateLevel } from '../services/xpSystem';
 import { resolveAvatarUrl } from '../utils/avatar';
 import { staggerContainer, staggerItem } from '../animations/variants';
 import type { Child } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const Leaderboard = () => {
+  const { t } = useTranslation();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,9 +31,9 @@ const Leaderboard = () => {
       <div className="text-center mb-8">
         <h1 className="font-headline text-headline-md text-on-surface flex items-center justify-center gap-2">
           <span className="material-symbols-outlined text-4xl text-tertiary">social_leaderboard</span>
-          Global Ranks
+          {t('leaderboard.globalRanks')}
         </h1>
-        <p className="font-body text-body-lg text-on-surface-variant mt-2">See who is mastering their rights!</p>
+        <p className="font-body text-body-lg text-on-surface-variant mt-2">{t('leaderboard.seeWhoIsMastering')}</p>
       </div>
 
       {loading ? (
@@ -76,11 +78,11 @@ const Leaderboard = () => {
                       <span className="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full font-body text-[10px] uppercase font-bold shrink-0">{child.currentTitle}</span>
                     )}
                   </div>
-                  <p className="font-body text-caption text-primary">Lvl {levelInfo.level} {levelInfo.title}</p>
+                  <p className="font-body text-caption text-primary">{t('leaderboard.lvl', { level: levelInfo.level, title: levelInfo.title })}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="font-headline text-title-lg text-on-surface">{child.xp}</div>
-                  <div className="font-body text-caption text-on-surface-variant uppercase">XP</div>
+                  <div className="font-body text-caption text-on-surface-variant uppercase">{t('leaderboard.xp')}</div>
                 </div>
               </motion.div>
             );

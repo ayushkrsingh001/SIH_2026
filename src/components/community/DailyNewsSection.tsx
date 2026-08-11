@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import type { LegalNewsItem } from '../../types';
 import { subscribeToLegalNews } from '../../firebase/communityFirestore';
-import { SkeletonNewsCard } from './SkeletonFeed';
 import { RichNewsCard } from './news/RichNewsCard';
 import { db } from '../../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -53,7 +52,7 @@ export const DailyNewsSection = () => {
       sorted = sorted.filter(n => bookmarkedIds.has(n.id!));
     } else if (activeTab === 'cyber') {
       sorted = sorted.filter(n => n.category?.toLowerCase().includes('cyber'));
-    } else if (activeTab === 'girls_safety' || activeTab === 'women_safety') {
+    } else if (activeTab === 'girls_safety') {
       sorted = sorted.filter(n => n.category?.toLowerCase().includes('women') || n.category?.toLowerCase().includes('girls'));
     } else if (activeTab === 'child_rights') {
       sorted = sorted.filter(n => n.category?.toLowerCase().includes('child'));

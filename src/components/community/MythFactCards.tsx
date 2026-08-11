@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import type { MythFact } from '../../types';
 import { subscribeToMythFacts, markMythFactCompleted, getCompletedMythFactIds } from '../../firebase/communityFirestore';
 import { getCategoryById } from '../../constants';
 import { XPRewardPopup } from './XPRewardPopup';
-import toast from 'react-hot-toast';
 
 export const MythFactCards = () => {
   const { user } = useAuth();
@@ -32,7 +31,6 @@ export const MythFactCards = () => {
   }, [user]);
 
   const currentCard = mythFacts[currentIndex];
-  const uncompletedCards = mythFacts.filter(mf => !completedIds.has(mf.id!));
 
   const handleFlip = () => setFlipped(!flipped);
 

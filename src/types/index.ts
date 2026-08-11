@@ -883,7 +883,7 @@ export interface LearningEvent {
   id?: string;
   childId: string;
   parentId: string;
-  activityType: 'module' | 'ai_quiz' | 'incident_report';
+  activityType: 'module' | 'ai_quiz' | 'incident_report' | 'ai_level';
   topic: string;
   score: number;
   mistakes: string[];

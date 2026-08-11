@@ -23,6 +23,7 @@ import { ScamAlertSection } from '../components/community/ScamAlertSection';
 import { SkeletonFeed } from '../components/community/SkeletonFeed';
 
 import { staggerContainer } from '../animations/variants';
+import { useTranslation } from 'react-i18next';
 
 type TabType = 'feed' | 'stories' | 'shorts' | 'news' | 'alerts';
 
@@ -35,6 +36,7 @@ const TABS: { id: TabType; label: string; icon: string }[] = [
 ];
 
 const Community = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [posts, setPosts] = useState<ParentPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,9 +100,9 @@ const Community = () => {
     return (
       <div className="max-w-2xl mx-auto mt-20 text-center">
         <span className="material-symbols-outlined text-[64px] text-primary mb-4">gpp_good</span>
-        <h1 className="font-headline text-headline-md text-on-surface mb-2">Parents Only Area</h1>
+        <h1 className="font-headline text-headline-md text-on-surface mb-2">{t('community.parentsOnlyArea')}</h1>
         <p className="font-body text-body-lg text-on-surface-variant">
-          The community wall is a safe space for parents to discuss child safety and share experiences. Ask your parent to login!
+          {t('community.parentsOnlyDesc')}
         </p>
       </div>
     );
@@ -116,9 +118,9 @@ const Community = () => {
           <div>
             <h1 className="font-headline text-headline-md text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary filled text-[32px]">forum</span>
-              Legal Awareness Community
+              {t('community.title')}
             </h1>
-            <p className="font-body text-body-lg text-on-surface-variant mt-1">Share stories, stay aware, protect your family.</p>
+            <p className="font-body text-body-lg text-on-surface-variant mt-1">{t('community.subtitle')}</p>
           </div>
           <motion.button
             onClick={() => setIsCreateModalOpen(true)}
@@ -127,7 +129,7 @@ const Community = () => {
             whileTap={{ scale: 0.95 }}
           >
             <span className="material-symbols-outlined text-[20px]">edit_square</span>
-            Share Story
+            {t('community.shareStory')}
           </motion.button>
         </div>
 
@@ -139,7 +141,7 @@ const Community = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search posts, topics, categories..."
+              placeholder={t('community.searchPlaceholder')}
               className="flex-1 bg-transparent border-none outline-none font-body text-body-md text-on-surface"
             />
             {searchQuery && (
@@ -164,7 +166,7 @@ const Community = () => {
               }`}
             >
               <span className={`material-symbols-outlined text-[18px] ${activeTab === tab.id ? 'filled text-primary' : ''}`}>{tab.icon}</span>
-              {tab.label}
+              {t(`community.${tab.id}`)}
             </button>
           ))}
         </div>
@@ -197,7 +199,7 @@ const Community = () => {
                         : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
                     }`}
                   >
-                    🌐 All
+                    🌐 {t('community.all')}
                   </button>
                   {COMMUNITY_CATEGORIES.map(cat => (
                     <button
@@ -219,7 +221,7 @@ const Community = () => {
 
                 {/* Sort Options */}
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="font-body text-caption text-on-surface-variant">Sort by:</span>
+                  <span className="font-body text-caption text-on-surface-variant">{t('community.sortBy')}</span>
                   {(['latest', 'trending', 'most_liked'] as const).map(opt => (
                     <button
                       key={opt}
@@ -230,7 +232,7 @@ const Community = () => {
                           : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
                       }`}
                     >
-                      {opt === 'latest' ? '🕐 Latest' : opt === 'trending' ? '🔥 Trending' : '❤️ Most Liked'}
+                      {opt === 'latest' ? `🕐 ${t('community.latest')}` : opt === 'trending' ? `🔥 ${t('community.trending')}` : `❤️ ${t('community.mostLiked')}`}
                     </button>
                   ))}
                 </div>
@@ -241,8 +243,8 @@ const Community = () => {
                 ) : displayPosts.length === 0 ? (
                   <EmptyState
                     icon="forum"
-                    title={searchResults !== null ? 'No results found' : 'No posts yet'}
-                    description={searchResults !== null ? 'Try a different search term' : `Be the first to share in ${activeCategory === 'all' ? 'the community' : COMMUNITY_CATEGORIES.find(c => c.id === activeCategory)?.label}!`}
+                    title={searchResults !== null ? t('community.noResultsFound') : t('community.noPostsYet')}
+                    description={searchResults !== null ? t('community.tryDifferentSearch') : t('community.beTheFirstToShare', { category: activeCategory === 'all' ? t('community.all').toLowerCase() : COMMUNITY_CATEGORIES.find(c => c.id === activeCategory)?.label })}
                   />
                 ) : (
                   <motion.div

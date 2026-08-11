@@ -10,11 +10,12 @@ import { showHelpRequestToast } from '../components/ui/HelpRequestToast';
 import { SafetyAnalytics } from '../components/dashboard/SafetyAnalytics';
 import { resolveAvatarUrl } from '../utils/avatar';
 import { calculateLevel, getXpForNextLevel } from '../services/xpSystem';
-import { AVATAR_OPTIONS, MAX_CHILDREN } from '../constants';
+import { MAX_CHILDREN } from '../constants';
 import { staggerContainer, staggerItem } from '../animations/variants';
 import { CardSkeleton } from '../components/ui/SkeletonLoader';
 import type { Child, Notification } from '../types';
-import { allLocalModules } from '../data';
+import { useGameData } from '../hooks/useGameData';
+import { useTranslation } from 'react-i18next';
 
 interface ChildAnalytics {
   child: Child;
@@ -25,8 +26,10 @@ interface ChildAnalytics {
 }
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { modules: allLocalModules } = useGameData();
   const [analytics, setAnalytics] = useState<ChildAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -75,8 +78,8 @@ const Dashboard = () => {
           const safetyScore = safetyModulesCount > 0 ? Math.round(safetyScoreTotal / safetyModulesCount) : 0;
           const completionRate = totalModules > 0 ? Math.round((progressList.length / totalModules) * 100) : 0;
           
-          let strongTopic = 'None yet';
-          let weakTopic = 'None yet';
+          let strongTopic = t('dashboard.noneYet');
+          let weakTopic = t('dashboard.noneYet');
           let maxScore = -1;
           let minScore = 101;
           
@@ -100,14 +103,13 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user]);
 
-  const getAvatar = (avatarId: string) => AVATAR_OPTIONS.find(a => a.id === avatarId) || AVATAR_OPTIONS[0];
 
   return (
     <div className="pb-20">
       <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="font-headline text-display-lg-mobile md:text-display-lg text-on-surface">Parent Dashboard</h2>
-          <p className="font-body text-body-lg text-on-surface-variant mt-2">Manage your explorers and track their journey.</p>
+          <h2 className="font-headline text-display-lg-mobile md:text-display-lg text-on-surface">{t('dashboard.title')}</h2>
+          <p className="font-body text-body-lg text-on-surface-variant mt-2">{t('dashboard.subtitle')}</p>
         </div>
         <div className="flex gap-4 items-center">
           <div className="relative">
@@ -135,15 +137,15 @@ const Dashboard = () => {
                   className="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-lg border border-outline-variant overflow-hidden z-50"
                 >
                   <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-                    <h3 className="font-headline text-title-md text-on-surface">Notifications</h3>
+                    <h3 className="font-headline text-title-md text-on-surface">{t('dashboard.notifications')}</h3>
                     {unreadCount > 0 && (
-                      <span className="bg-error text-white text-xs font-bold px-2 py-0.5 rounded-full">{unreadCount} New</span>
+                      <span className="bg-error text-white text-xs font-bold px-2 py-0.5 rounded-full">{unreadCount} {t('dashboard.new')}</span>
                     )}
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center text-on-surface-variant text-body-sm">
-                        No notifications right now.
+                        {t('dashboard.noNotifications')}
                       </div>
                     ) : (
                       notifications.slice(0, 5).map(notif => (
@@ -175,13 +177,13 @@ const Dashboard = () => {
                            <div className="shrink-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary text-xs font-bold overflow-hidden">
                              {notif.actorPhoto ? <img src={resolveAvatarUrl(notif.actorPhoto)} alt="" className="w-full h-full object-cover"/> : notif.actorName.charAt(0).toUpperCase()}
                            </div>
-                           <div className="flex-grow">
+                            <div className="flex-grow">
                              <p className="font-body text-body-sm text-on-surface">
                                <span className="font-bold">{notif.actorName}</span>
-                               {notif.type === 'help_request' && ' requested help.'}
-                               {notif.type === 'like' && ' liked a post.'}
-                               {notif.type === 'comment' && ' commented.'}
-                               {notif.type === 'mention' && ' mentioned you.'}
+                               {notif.type === 'help_request' && t('dashboard.requestedHelp')}
+                               {notif.type === 'like' && t('dashboard.likedPost')}
+                               {notif.type === 'comment' && t('dashboard.commented')}
+                               {notif.type === 'mention' && t('dashboard.mentionedYou')}
                              </p>
                            </div>
                            {!notif.read && <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />}
@@ -193,7 +195,7 @@ const Dashboard = () => {
                     onClick={() => navigate('/notifications')}
                     className="p-3 text-center text-primary font-bold text-label-md cursor-pointer hover:bg-surface-container-high transition-colors bg-surface-container-lowest"
                   >
-                    View All Notifications
+                    {t('dashboard.viewAllNotifications')}
                   </div>
                 </motion.div>
               )}
@@ -205,7 +207,7 @@ const Dashboard = () => {
               className="bg-error-container text-on-error-container px-6 py-3 rounded-full font-body text-label-md btn-tactile border-b-4 border-error/20 flex items-center gap-2 shadow-sm"
             >
               <span className="material-symbols-outlined">report</span>
-              Report Incident
+              {t('dashboard.reportIncident')}
             </button>
             {analytics.length < MAX_CHILDREN && (
               <button
@@ -213,7 +215,7 @@ const Dashboard = () => {
                 className="bg-primary text-on-primary px-6 py-3 rounded-full font-body text-label-md btn-tactile border-b-4 border-on-primary-fixed-variant flex items-center gap-2 shadow-sm"
               >
                 <span className="material-symbols-outlined">person_add</span>
-                Add Explorer
+                {t('dashboard.addExplorer')}
               </button>
             )}
           </div>
@@ -230,7 +232,7 @@ const Dashboard = () => {
              onClick={() => setSelectedAnalyticsChild(null)} 
              className="mb-6 flex items-center gap-2 text-primary hover:bg-primary-container px-4 py-2 rounded-full transition-colors w-fit font-body text-label-lg font-bold"
            >
-             <span className="material-symbols-outlined">arrow_back</span> Back to Overview
+             <span className="material-symbols-outlined">arrow_back</span> {t('dashboard.backToOverview')}
            </button>
            <SafetyAnalytics child={selectedAnalyticsChild} />
         </div>
@@ -273,12 +275,12 @@ const Dashboard = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <button onClick={() => navigate(`/play/${child.id}/map`)} className="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-body text-label-md btn-tactile-primary flex items-center justify-center gap-1">
-                      Play
+                      {t('dashboard.play')}
                       <span className="material-symbols-outlined text-sm">play_arrow</span>
                     </button>
                     <button onClick={() => navigate(`/dashboard/safety-twin/${child.id}`)} className="bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-full font-body text-label-md btn-tactile flex items-center justify-center gap-1 border-b-4 border-on-tertiary-fixed-variant">
                       <span className="material-symbols-outlined text-sm">shield</span>
-                      Aegis Safety Twin
+                      {t('dashboard.aegisSafetyTwin')}
                     </button>
                   </div>
                 </div>
@@ -287,14 +289,14 @@ const Dashboard = () => {
                   <div className="bg-surface-bright p-4 rounded-[20px] border border-outline-variant">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="material-symbols-outlined text-secondary text-sm filled">shield</span>
-                      <span className="font-body text-caption text-on-surface-variant">Safety Score</span>
+                      <span className="font-body text-caption text-on-surface-variant">{t('dashboard.safetyScore')}</span>
                     </div>
                     <div className="font-headline text-display-md text-secondary">{safetyScore}%</div>
                   </div>
                   <div className="bg-surface-bright p-4 rounded-[20px] border border-outline-variant">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="material-symbols-outlined text-primary text-sm filled">task_alt</span>
-                      <span className="font-body text-caption text-on-surface-variant">Completion</span>
+                      <span className="font-body text-caption text-on-surface-variant">{t('dashboard.completion')}</span>
                     </div>
                     <div className="font-headline text-display-md text-primary">{completionRate}%</div>
                   </div>
@@ -302,19 +304,19 @@ const Dashboard = () => {
 
                 <div className="space-y-4 mb-6 bg-surface-container-high p-4 rounded-[20px]">
                   <div className="flex justify-between items-center">
-                     <span className="font-body text-label-md text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-sm text-secondary">trending_up</span> Strongest</span>
+                     <span className="font-body text-label-md text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-sm text-secondary">trending_up</span> {t('dashboard.strongest')}</span>
                      <span className="font-headline text-title-md text-on-surface">{strongTopic}</span>
                   </div>
                   <div className="h-px bg-surface-dim" />
                   <div className="flex justify-between items-center">
-                     <span className="font-body text-label-md text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-sm text-error">trending_down</span> Needs Focus</span>
+                     <span className="font-body text-label-md text-on-surface-variant flex items-center gap-1"><span className="material-symbols-outlined text-sm text-error">trending_down</span> {t('dashboard.needsFocus')}</span>
                      <span className="font-headline text-title-md text-on-surface">{weakTopic}</span>
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between font-body text-caption mb-1 text-on-surface-variant">
-                    <span>XP Progress to Lvl {levelInfo.level + 1}</span>
+                    <span>{t('dashboard.xpProgress')} {levelInfo.level + 1}</span>
                     <span className="font-bold text-primary">{Math.round(xpProgress.progress)}%</span>
                   </div>
                   <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden">

@@ -10,8 +10,10 @@ import { MASCOT_SMALL_URL } from '../constants';
 import { PageSkeleton } from '../components/ui/SkeletonLoader';
 import type { Scene, Choice, CachedAILevel } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const AILevelPlayer = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild } = useChild();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ const AILevelPlayer = () => {
 
       const cached = await getCachedAILevelById(aiLevelId);
       if (!cached) {
-        toast.error('AI level not found');
+        toast.error(t('aiLevelPlayer.aiLevelNotFound'));
         navigate(`/play/${childId}/ai-hub`);
         return;
       }
@@ -88,7 +90,7 @@ const AILevelPlayer = () => {
       }
     } catch (error) {
       console.error("Failed to save completion stats:", error);
-      toast.error("Couldn't save some progress, but level is complete!");
+      toast.error(t('aiLevelPlayer.couldntSaveProgress'));
     }
   }, [user, childId, aiLevelId, cachedLevel, totalChoices, correctChoices, activeChild]);
 
@@ -150,11 +152,11 @@ const AILevelPlayer = () => {
         }
 
         setSelectedChoice({
-          text: 'Sequence',
+          text: t('scenarioPlayer.sequence'), // reusing sequence from scenarioPlayer
           isCorrect,
           feedbackText: isCorrect
-            ? '✅ Perfect sequence! You got the order right!'
-            : '❌ Not quite the right order. Review the correct sequence!',
+            ? t('aiLevelPlayer.perfectSequenceGotOrder')
+            : t('aiLevelPlayer.wrongSequenceReview'),
           nextSceneId: currentScene.nextSceneId || null,
         });
         setShowFeedback(true);
@@ -261,10 +263,9 @@ const AILevelPlayer = () => {
               </div>
             )}
 
-            {/* Order Sequence */}
             {currentScene.type === 'order_sequence' && !showFeedback && currentScene.sequenceItems && (
               <div className="space-y-4">
-                <p className="font-body text-label-md text-on-surface-variant">Tap the items in the correct order:</p>
+                <p className="font-body text-label-md text-on-surface-variant">{t('scenarioPlayer.tapItemsInOrder')}</p>
                 <div className="flex flex-col gap-2">
                   {currentScene.sequenceItems.map(item => {
                     const isSelected = sequenceSelection.includes(item.id);
@@ -295,7 +296,7 @@ const AILevelPlayer = () => {
                     onClick={() => setSequenceSelection([])}
                     className="mt-4 text-primary font-body text-label-md hover:underline"
                   >
-                    Reset Order
+                    {t('scenarioPlayer.resetOrder')}
                   </button>
                 )}
               </div>
@@ -309,7 +310,7 @@ const AILevelPlayer = () => {
                 onClick={handleContinue}
                 className="w-full py-4 bg-primary text-on-primary rounded-full font-body text-label-lg btn-tactile border-b-4 border-on-primary-fixed-variant shadow-sm"
               >
-                Start Questions →
+                {t('aiLevelPlayer.startQuestions')}
               </motion.button>
             )}
 
@@ -329,7 +330,7 @@ const AILevelPlayer = () => {
                     {selectedChoice.isCorrect ? 'check_circle' : 'cancel'}
                   </span>
                   <h3 className="font-headline text-title-lg">
-                    {selectedChoice.isCorrect ? 'Great Job!' : 'Not Quite Right'}
+                    {selectedChoice.isCorrect ? t('scenarioPlayer.greatJob') : t('scenarioPlayer.notQuiteRight')}
                   </h3>
                 </div>
                 <p className="font-body text-body-lg mb-6 leading-relaxed opacity-90">
@@ -343,7 +344,7 @@ const AILevelPlayer = () => {
                       : 'bg-error text-on-error border-[#8c0009] hover:bg-[#8c0009]'
                   } transition-colors`}
                 >
-                  {selectedChoice.isCorrect ? 'Continue' : 'Got it, continue!'}
+                  {selectedChoice.isCorrect ? t('scenarioPlayer.continueBtn') : t('aiLevelPlayer.gotItContinue')}
                 </button>
               </motion.div>
             )}

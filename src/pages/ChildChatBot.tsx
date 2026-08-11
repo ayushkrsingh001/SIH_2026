@@ -1,21 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
 import { groqService } from '../services/groqService';
-import { EMERGENCY_NUMBERS } from '../constants';
 import type { LegalAIChatMessage } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
-const QUICK_PROMPTS = [
-  { label: '😔 I feel sad today', prompt: 'I feel sad today.' },
-  { label: '😠 Someone is being mean', prompt: 'Someone is being mean to me.' },
-  { label: '📖 Tell me a safety story', prompt: 'Can you tell me a short story about staying safe?' },
-  { label: '❓ I have a question', prompt: 'I have a question about my rights.' },
+const getQuickPrompts = (t: any) => [
+  { label: t('childChatBot.feelSad'), prompt: t('childChatBot.feelSadPrompt') },
+  { label: t('childChatBot.someoneMean'), prompt: t('childChatBot.someoneMeanPrompt') },
+  { label: t('childChatBot.safetyStory'), prompt: t('childChatBot.safetyStoryPrompt') },
+  { label: t('childChatBot.haveQuestion'), prompt: t('childChatBot.haveQuestionPrompt') },
 ];
 
 export default function ChildChatBot() {
+  const { t } = useTranslation();
+  const QUICK_PROMPTS = getQuickPrompts(t);
   const { user } = useAuth();
   const { activeChild } = useChild();
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export default function ChildChatBot() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<any>(null);
 
   // Ensure voices are loaded
@@ -95,7 +97,7 @@ export default function ChildChatBot() {
       }
     } catch (err) {
       console.error('AI chat error:', err);
-      toast.error("Oops! Aegis is resting right now. Please try again later.");
+      toast.error(t('childChatBot.aegisResting'));
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +107,7 @@ export default function ChildChatBot() {
     // @ts-ignore
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error("Your browser doesn't support voice recording.");
+      toast.error(t('childChatBot.noVoiceSupport'));
       return;
     }
     
@@ -162,7 +164,7 @@ export default function ChildChatBot() {
     recognition.onerror = (event: any) => {
       setIsListening(false);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
-         toast.error("Couldn't hear clearly. Please try again.");
+         toast.error(t('childChatBot.couldntHear'));
       }
     };
     
@@ -203,10 +205,10 @@ export default function ChildChatBot() {
               <span className="material-symbols-outlined text-[28px]">shield</span>
             </div>
             <div>
-              <h1 className="font-headline text-title-lg text-on-surface">Aegis 🛡️</h1>
+              <h1 className="font-headline text-title-lg text-on-surface">{t('childChatBot.aegis')}</h1>
               <p className="font-body text-caption text-on-surface-variant flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#4ECDC4] animate-pulse" />
-                Your AI Safety Guardian
+                {t('childChatBot.safetyGuardian')}
               </p>
             </div>
           </div>
@@ -216,7 +218,7 @@ export default function ChildChatBot() {
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
             isVoiceEnabled ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface-variant'
           }`}
-          title={isVoiceEnabled ? "Mute Voice" : "Unmute Voice"}
+          title={isVoiceEnabled ? t('childChatBot.muteVoice') : t('childChatBot.unmuteVoice')}
         >
           <span className="material-symbols-outlined">
             {isVoiceEnabled ? 'volume_up' : 'volume_off'}
@@ -242,7 +244,7 @@ export default function ChildChatBot() {
               transition={{ delay: 0.3 }}
               className="font-headline text-headline-sm text-on-surface mb-3"
             >
-              Hi {activeChild?.displayName || 'Explorer'}! 👋
+              {t('childChatBot.hiExplorer', { name: activeChild?.displayName || 'Explorer' })}
             </motion.h2>
             <motion.p 
               initial={{ y: 20, opacity: 0 }}
@@ -250,7 +252,7 @@ export default function ChildChatBot() {
               transition={{ delay: 0.4 }}
               className="font-body text-body-lg text-on-surface-variant mb-8"
             >
-              I'm Aegis, your Safety Guardian. I'll help you learn your rights, stay safe, and become a Safety Hero! What's on your mind?
+              {t('childChatBot.aegisIntro')}
             </motion.p>
             
             <motion.div 
@@ -334,7 +336,7 @@ export default function ChildChatBot() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message here..."
+            placeholder={t('childChatBot.typeMessageHere')}
             className="flex-1 bg-transparent border-none outline-none font-body text-body-lg text-on-surface placeholder:text-on-surface-variant/60"
             disabled={isLoading || isListening}
           />

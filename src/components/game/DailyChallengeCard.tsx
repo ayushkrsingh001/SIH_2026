@@ -8,8 +8,10 @@ import { groqService } from '../../services/groqService';
 import toast from 'react-hot-toast';
 import type { DailyChallengeStreak, CachedAILevel } from '../../types';
 import { Timestamp } from 'firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export const DailyChallengeCard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild } = useChild();
   const navigate = useNavigate();
@@ -78,7 +80,7 @@ export const DailyChallengeCard = () => {
 
     if (todayChallenge) {
       if (todayChallenge.status === 'completed') {
-        toast.success("You already completed today's challenge!");
+        toast.success(t('dailyChallenge.alreadyCompleted'));
         return;
       }
       navigate(`/play/${activeChild.id}/ai-level/${todayChallenge.id}`);
@@ -123,8 +125,8 @@ export const DailyChallengeCard = () => {
       navigate(`/play/${activeChild.id}/ai-level/${id}`);
     } catch (e: any) {
       console.error('Error generating daily challenge:', e);
-      alert(`Failed to start quiz: ${e.message || 'Unknown error'}`);
-      toast.error(`Failed to start: ${e.message || 'Unknown error'}`);
+      alert(t('dailyChallenge.failedStart', { message: e.message || 'Unknown error' }));
+      toast.error(t('dailyChallenge.failedStart', { message: e.message || 'Unknown error' }));
     } finally {
       setGenerating(false);
     }
@@ -154,25 +156,25 @@ export const DailyChallengeCard = () => {
               {completed ? 'check_circle' : 'stars'}
             </span>
             <h2 className="font-headline text-headline-sm font-bold">
-              {completed ? 'Challenge Completed!' : 'Daily AI Challenge'}
+              {completed ? t('dailyChallenge.challengeCompleted') : t('dailyChallenge.dailyChallengeTitle')}
             </h2>
           </div>
           
           <p className={`font-body text-body-lg mb-4 ${completed ? 'text-on-surface-variant' : 'text-white/90'}`}>
             {completed 
-              ? 'Awesome job! You earned your daily rewards. Come back tomorrow for a new mystery challenge.'
-              : 'A brand new personalized challenge awaits. Earn extra XP, coins, and a Daily Badge!'}
+              ? t('dailyChallenge.completedDesc')
+              : t('dailyChallenge.uncompletedDesc')}
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
             <div className={`px-4 py-2 rounded-full font-bold flex items-center gap-2 ${
               completed ? 'bg-surface-container-lowest text-on-surface' : 'bg-white/20 text-white'
             }`}>
-              🔥 Streak: {streak?.currentStreak || 0} Days
+              {t('dailyChallenge.streak', { streak: streak?.currentStreak || 0 })}
             </div>
             {completed && (
               <div className="px-4 py-2 rounded-full bg-surface-container-lowest text-on-surface font-bold flex items-center gap-2">
-                ⏳ Next challenge in: {timeLeft}
+                {t('dailyChallenge.nextChallengeIn', { time: timeLeft })}
               </div>
             )}
           </div>
@@ -188,11 +190,11 @@ export const DailyChallengeCard = () => {
               {generating ? (
                 <>
                   <span className="material-symbols-outlined animate-spin">refresh</span>
-                  Generating...
+                  {t('dailyChallenge.generating')}
                 </>
               ) : (
                 <>
-                  Play Now
+                  {t('dailyChallenge.playNow')}
                   <span className="material-symbols-outlined">play_arrow</span>
                 </>
               )}

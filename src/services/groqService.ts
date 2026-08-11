@@ -91,6 +91,9 @@ function buildPrompt(context: LevelContext, type: string, extraInstructions?: st
   const worldTopics = TOPIC_MAP[context.currentWorld] || TOPIC_MAP[1];
   const worldName = WORLD_NAMES[context.currentWorld] || 'Adventure World';
 
+  const isHindi = context.language === 'hi';
+  const questionCount = isHindi ? 'exactly 3 to 4' : 'exactly 5 to 8';
+  
   let prompt = `Generate a ${type} for the game RightsQuest.
 
 PLAYER PROFILE:
@@ -109,11 +112,15 @@ STRONG TOPICS (less focus): ${context.strongTopics.length > 0 ? context.strongTo
 ALREADY COMPLETED TOPICS: ${context.completedTopics.length > 0 ? context.completedTopics.join(', ') : 'None'}
 
 REQUIREMENTS:
-- Generate exactly 5 to 8 unique questions
+- Generate ${questionCount} unique questions
 - Mix at least 3 different question types
 - Story must feature Indian children in relatable scenarios
 - All legal facts must reference real Indian laws
 - Difficulty should match: ${context.difficulty}`;
+
+  if (isHindi) {
+    prompt += `\n- The output MUST be entirely in Hindi (except for the JSON keys, which must remain in English).`;
+  }
 
   if (context.avoidQuestions.length > 0) {
     prompt += `\n- AVOID these previously used question themes: ${context.avoidQuestions.slice(0, 10).join(', ')}`;
@@ -159,7 +166,7 @@ class GroqLevelGenerator {
   private async _executeGroqCall(systemPrompt: string, userPrompt: string): Promise<string> {
     const client = this.getClient();
     const response = await client.chat.completions.create({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -206,8 +213,8 @@ class GroqLevelGenerator {
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        // Alternate providers: Even attempts try Groq, Odd attempts try OpenRouter
-        const useGroq = attempt % 2 === 0;
+        // Always try Groq first. Only use OpenRouter on the absolute last attempt
+        const useGroq = attempt < retries;
         
         let text = '';
         if (useGroq) {
@@ -305,7 +312,12 @@ class GroqLevelGenerator {
     return this.callGroq(prompt);
   }
 
-  async generateCampaignLevel(moduleTitle: string, category: string, difficulty: string, ageGroup: string): Promise<AIGeneratedLevel> {
+  async generateCampaignLevel(moduleTitle: string, category: string, difficulty: string, ageGroup: string, language: string = 'en'): Promise<AIGeneratedLevel> {
+    const isHindi = language === 'hi';
+    const langInstruction = isHindi ? '\n- The output MUST be entirely in Hindi (except for the JSON keys, which must remain in English).' : '';
+    // Request fewer questions for Hindi to avoid token limit issues (max completion tokens reached)
+    const questionCount = isHindi ? 'exactly 3 to 4' : 'exactly 5 to 7';
+    
     const prompt = `Generate a playable educational level for the game RightsQuest.
 
 PLAYER PROFILE:
@@ -317,11 +329,11 @@ SPECIFIC LEVEL TOPIC:
 - Specific Title/Focus: ${moduleTitle}
 
 REQUIREMENTS:
-- Generate exactly 5 to 7 unique questions
+- Generate ${questionCount} unique questions
 - Mix at least 2 different question types
 - Story must feature Indian children in relatable scenarios relevant to "${moduleTitle}"
 - All legal facts must reference real Indian laws
-- Difficulty should match: ${difficulty}`;
+- Difficulty should match: ${difficulty}${langInstruction}`;
 
     return this.callGroq(prompt);
   }

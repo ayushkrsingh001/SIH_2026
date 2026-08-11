@@ -3,12 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
-import { getProgress, setProgress, updateChild } from '../firebase/firestore';
+import { setProgress, updateChild } from '../firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 import { MASCOT_SMALL_URL } from '../constants';
 import { PageSkeleton } from '../components/ui/SkeletonLoader';
 import type { Scene, Module, Progress, Choice, DangerZone } from '../types';
-import { allLocalModules } from '../data';
+import { useGameData } from '../hooks/useGameData';
+import { useTranslation } from 'react-i18next';
 import { groqService } from '../services/groqService';
 import { transformAILevelToScenes } from '../services/aiLevelTransformer';
 import toast from 'react-hot-toast';
@@ -18,6 +19,8 @@ const ScenarioPlayer = () => {
   const { activeChild } = useChild();
   const navigate = useNavigate();
   const { childId, moduleId } = useParams();
+  const { modules: allLocalModules } = useGameData();
+  const { i18n } = useTranslation();
 
   const [module, setModule] = useState<Module | null>(null);
   const [scenes, setScenes] = useState<Scene[]>([]);
@@ -43,16 +46,15 @@ const ScenarioPlayer = () => {
       setModule(mod);
 
       try {
-        const childAge = activeChild?.age || 12;
-        let ageGroup = '11-13';
-        if (childAge <= 10) ageGroup = '8-10';
-        else if (childAge >= 14) ageGroup = '14-16';
+        const childAgeGroup = activeChild?.ageGroup || '8-11';
+        let ageGroup = childAgeGroup === '12-16' ? '14-16' : '8-10';
 
         const aiLevel = await groqService.generateCampaignLevel(
           mod.title,
           mod.category,
           mod.difficulty,
-          ageGroup
+          ageGroup,
+          i18n.language
         );
 
         const sceneList = transformAILevelToScenes(aiLevel, moduleId);
@@ -68,16 +70,16 @@ const ScenarioPlayer = () => {
         // Note: For dynamic levels, we ignore mid-level progress (visitedSceneIds) to ensure 
         // the new dynamic scenes don't clash with old session IDs.
         setVisitedSceneIds([]);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error generating dynamic campaign level:", error);
-        toast.error("Error loading dynamic level. Please try again.");
+        toast.error(`Error loading dynamic level: ${error.message || 'Unknown error'}`);
         navigate(`/play/${childId}/map`);
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [moduleId, user, childId, navigate, activeChild?.age]);
+  }, [moduleId, user, childId, navigate, activeChild?.ageGroup]);
 
   // Setup timers
   useEffect(() => {

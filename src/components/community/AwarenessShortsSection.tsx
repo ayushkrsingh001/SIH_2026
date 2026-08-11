@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import type { AwarenessShort } from '../../types';
 import { subscribeToShorts, toggleShortLike, updateShortInteraction, getShortInteraction } from '../../firebase/communityFirestore';
-import { toggleBookmark, checkBookmarked } from '../../firebase/communityFirestore';
+import { toggleBookmark } from '../../firebase/communityFirestore';
 import { getCategoryById } from '../../constants';
 import { XPRewardPopup } from './XPRewardPopup';
 import toast from 'react-hot-toast';
@@ -15,7 +15,6 @@ export const AwarenessShortsSection = () => {
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [watchedIds, setWatchedIds] = useState<Set<string>>(new Set());
-  const [activeIdx, setActiveIdx] = useState(0);
   const [showXP, setShowXP] = useState(false);
   const [xpAmount, setXpAmount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);

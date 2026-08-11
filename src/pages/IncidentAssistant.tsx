@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { saveIncidentReport, getIncidentReports } from '../firebase/firestore';
 import { groqService } from '../services/groqService';
 import type { IncidentReport, IncidentRiskLevel } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation, Trans } from 'react-i18next';
 
 const IncidentAssistant = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [history, setHistory] = useState<IncidentReport[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Wizard State
   const [isReporting, setIsReporting] = useState(false);
   const [step, setStep] = useState(0);
-  const [generating, setGenerating] = useState(false);
   const [activeReport, setActiveReport] = useState<IncidentReport | null>(null);
 
   // Form Data
@@ -93,9 +93,6 @@ const IncidentAssistant = () => {
 
   const submitReport = async () => {
     if (!user) return;
-    setGenerating(true);
-    setStep(99); // processing state
-    
     try {
       const chatHistory = QUESTIONS.map((q, i) => ({
         question: q.text,
@@ -121,8 +118,6 @@ const IncidentAssistant = () => {
     } catch (e) {
       toast.error('Failed to generate report.');
       setStep(QUESTIONS.length); // go back
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -144,7 +139,7 @@ const IncidentAssistant = () => {
     setActiveReport(null);
   };
 
-  if (loading) return <div className="p-8 text-center animate-pulse">Loading Assistant...</div>;
+  if (loading) return <div className="p-8 text-center animate-pulse">{t('incidentAssistant.loading')}</div>;
 
   return (
     <div className="max-w-4xl mx-auto pb-20">
@@ -153,9 +148,9 @@ const IncidentAssistant = () => {
       <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-2xl mb-8 flex items-start gap-4 shadow-sm">
         <span className="material-symbols-outlined text-secondary text-3xl">info</span>
         <div>
-          <h4 className="font-bold font-body text-label-lg text-on-surface">Educational Guidance Only</h4>
+          <h4 className="font-bold font-body text-label-lg text-on-surface">{t('incidentAssistant.educationalGuidanceOnly')}</h4>
           <p className="font-body text-body-sm text-on-surface-variant">
-            This AI assistant provides educational information and safety suggestions. It is <strong>not a substitute for professional legal advice</strong> or emergency services. In case of immediate physical danger, always call <strong>112</strong> or your local emergency number.
+            <Trans i18nKey="incidentAssistant.educationalGuidanceDesc" />
           </p>
         </div>
       </div>
@@ -164,24 +159,24 @@ const IncidentAssistant = () => {
         <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}>
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="font-headline text-headline-md text-on-surface">{isChildMode ? "My Safety Assistant" : "Safety Incident Assistant"}</h2>
-              <p className="text-on-surface-variant font-body">{isChildMode ? "Tell us what happened and we will help you right away." : "Report concerns and get immediate AI guidance."}</p>
+              <h2 className="font-headline text-headline-md text-on-surface">{isChildMode ? t('incidentAssistant.childTitle') : t('incidentAssistant.parentTitle')}</h2>
+              <p className="text-on-surface-variant font-body">{isChildMode ? t('incidentAssistant.childSubtitle') : t('incidentAssistant.parentSubtitle')}</p>
             </div>
             <button 
               onClick={() => setIsReporting(true)}
               className="bg-error text-white px-6 py-3 rounded-full font-bold font-body flex items-center gap-2 hover:bg-red-700 transition-colors shadow-md"
             >
               <span className="material-symbols-outlined">report</span>
-              {isChildMode ? "Report an Issue" : "Report New Concern"}
+              {isChildMode ? t('incidentAssistant.childReport') : t('incidentAssistant.parentReport')}
             </button>
           </div>
 
           {/* History */}
           <div className="space-y-4">
-            <h3 className="font-headline text-title-lg text-on-surface mt-8 mb-4">Previous Reports</h3>
+            <h3 className="font-headline text-title-lg text-on-surface mt-8 mb-4">{t('incidentAssistant.previousReports')}</h3>
             {history.length === 0 ? (
               <div className="bg-surface-container p-8 rounded-[24px] text-center text-on-surface-variant">
-                You have no active or past reports.
+                {t('incidentAssistant.noReports')}
               </div>
             ) : (
               history.map(report => (
@@ -189,7 +184,7 @@ const IncidentAssistant = () => {
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-headline text-title-md font-bold truncate max-w-[70%] text-on-surface">{report.initialConcern}</h4>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getRiskColor(report.riskLevel)}`}>
-                      {report.riskLevel} Risk
+                      {report.riskLevel} {t('incidentAssistant.riskLevel')}
                     </span>
                   </div>
                   <p className="text-on-surface-variant font-body text-body-sm line-clamp-2">{report.summary}</p>
@@ -201,18 +196,18 @@ const IncidentAssistant = () => {
       ) : activeReport ? (
         <motion.div initial={{opacity: 0, scale: 0.98}} animate={{opacity: 1, scale: 1}} className="space-y-6">
           <button onClick={resetWizard} className="flex items-center gap-2 text-primary hover:bg-primary-container px-4 py-2 rounded-full w-fit">
-             <span className="material-symbols-outlined">arrow_back</span> Back to Assistant
+             <span className="material-symbols-outlined">arrow_back</span> {t('incidentAssistant.backToAssistant')}
           </button>
 
           <div className="bg-surface-container-lowest border border-outline-variant rounded-[32px] overflow-hidden shadow-sm">
             <div className={`p-6 md:p-8 ${getRiskColor(activeReport.riskLevel)}`}>
-              <h2 className="font-headline text-headline-sm mb-2 text-white">AI Incident Report</h2>
+              <h2 className="font-headline text-headline-sm mb-2 text-white">{t('incidentAssistant.aiIncidentReport')}</h2>
               <div className="flex gap-2">
                 <span className="bg-black/20 px-3 py-1 rounded-full text-sm font-bold capitalize text-white">
-                  Risk Level: {activeReport.riskLevel}
+                  {t('incidentAssistant.riskLevel')}: {activeReport.riskLevel}
                 </span>
                 <span className="bg-black/20 px-3 py-1 rounded-full text-sm font-bold capitalize text-white">
-                  Status: {activeReport.status}
+                  {t('incidentAssistant.status')}: {activeReport.status}
                 </span>
               </div>
             </div>
@@ -220,7 +215,7 @@ const IncidentAssistant = () => {
             <div className="p-6 md:p-8 space-y-8">
               <div>
                 <h3 className="font-headline text-title-lg text-on-surface mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">subject</span> Situation Summary
+                  <span className="material-symbols-outlined text-primary">subject</span> {t('incidentAssistant.situationSummary')}
                 </h3>
                 <p className="font-body text-body-lg text-on-surface-variant leading-relaxed">
                   {activeReport.summary}
@@ -230,7 +225,7 @@ const IncidentAssistant = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="font-headline text-title-lg text-error mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined">running_with_errors</span> Immediate Actions
+                    <span className="material-symbols-outlined">running_with_errors</span> {t('incidentAssistant.immediateActions')}
                   </h3>
                   <ul className="space-y-3">
                     {activeReport.immediateSteps.map((step, i) => (
@@ -244,7 +239,7 @@ const IncidentAssistant = () => {
 
                 <div>
                    <h3 className="font-headline text-title-lg text-secondary mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined">psychology</span> Support Advice
+                    <span className="material-symbols-outlined">psychology</span> {t('incidentAssistant.supportAdvice')}
                   </h3>
                   <div className="bg-secondary-container/30 p-5 rounded-2xl border border-secondary/20 font-body text-on-surface">
                     {activeReport.mentalHealthAdvice}
@@ -254,13 +249,13 @@ const IncidentAssistant = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="border border-outline-variant p-5 rounded-2xl bg-surface-container-lowest">
-                  <h4 className="font-bold text-green-600 mb-3 flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> DO'S</h4>
+                  <h4 className="font-bold text-green-600 mb-3 flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> {t('incidentAssistant.dos')}</h4>
                   <ul className="list-disc pl-5 space-y-1 font-body text-on-surface">
                     {activeReport.dosAndDonts.dos.map((d, i) => <li key={i}>{d}</li>)}
                   </ul>
                 </div>
                 <div className="border border-outline-variant p-5 rounded-2xl bg-surface-container-lowest">
-                  <h4 className="font-bold text-red-600 mb-3 flex items-center gap-2"><span className="material-symbols-outlined">cancel</span> DONT'S</h4>
+                  <h4 className="font-bold text-red-600 mb-3 flex items-center gap-2"><span className="material-symbols-outlined">cancel</span> {t('incidentAssistant.donts')}</h4>
                   <ul className="list-disc pl-5 space-y-1 font-body text-on-surface">
                     {activeReport.dosAndDonts.donts.map((d, i) => <li key={i}>{d}</li>)}
                   </ul>
@@ -269,11 +264,11 @@ const IncidentAssistant = () => {
 
               {(activeReport.emergencyNumbers.length > 0 || activeReport.officialReportingOptions.length > 0) && (
                 <div className="bg-surface-container-high p-6 rounded-[24px]">
-                  <h3 className="font-headline text-title-lg text-on-surface mb-4">Official Channels</h3>
+                  <h3 className="font-headline text-title-lg text-on-surface mb-4">{t('incidentAssistant.officialChannels')}</h3>
                   <div className="flex flex-wrap gap-6">
                     {activeReport.emergencyNumbers.length > 0 && (
                       <div>
-                        <p className="text-sm font-bold text-on-surface-variant mb-2">Emergency Numbers</p>
+                        <p className="text-sm font-bold text-on-surface-variant mb-2">{t('incidentAssistant.emergencyNumbers')}</p>
                         <div className="flex gap-2">
                           {activeReport.emergencyNumbers.map(n => (
                             <a key={n} href={`tel:${n}`} className="bg-error text-white px-4 py-2 rounded-full font-bold flex items-center gap-1 shadow-sm hover:scale-105 transition-transform">
@@ -285,7 +280,7 @@ const IncidentAssistant = () => {
                     )}
                     {activeReport.officialReportingOptions.length > 0 && (
                       <div>
-                        <p className="text-sm font-bold text-on-surface-variant mb-2">Reporting Portals</p>
+                        <p className="text-sm font-bold text-on-surface-variant mb-2">{t('incidentAssistant.reportingPortals')}</p>
                         <ul className="list-disc pl-5 font-body text-primary underline">
                           {activeReport.officialReportingOptions.map((opt, i) => <li key={i}>{opt}</li>)}
                         </ul>
@@ -298,7 +293,7 @@ const IncidentAssistant = () => {
               {activeReport.recommendedMissions.length > 0 && (
                 <div>
                    <h3 className="font-headline text-title-md text-on-surface mb-3 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-tertiary">sports_esports</span> Recommended Learning (RightsQuest)
+                    <span className="material-symbols-outlined text-tertiary">sports_esports</span> {t('incidentAssistant.recommendedLearning')}
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {activeReport.recommendedMissions.map((m, i) => (
@@ -318,8 +313,8 @@ const IncidentAssistant = () => {
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div key="s0" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}}>
-                <h2 className="font-headline text-headline-sm mb-4">What is your concern?</h2>
-                <p className="font-body text-on-surface-variant mb-6">Briefly describe what happened so the AI can prepare.</p>
+                <h2 className="font-headline text-headline-sm mb-4">{t('incidentAssistant.whatIsYourConcern')}</h2>
+                <p className="font-body text-on-surface-variant mb-6">{t('incidentAssistant.whatIsYourConcernDesc')}</p>
                 <textarea 
                   value={initialConcern}
                   onChange={e => setInitialConcern(e.target.value)}
@@ -328,15 +323,15 @@ const IncidentAssistant = () => {
                   rows={4}
                 />
                 <div className="flex justify-end gap-3 mt-6">
-                  <button onClick={resetWizard} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
-                  <button onClick={handleNext} className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold btn-tactile">Next Step</button>
+                  <button onClick={resetWizard} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">{t('incidentAssistant.cancel')}</button>
+                  <button onClick={handleNext} className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold btn-tactile">{t('incidentAssistant.nextStep')}</button>
                 </div>
               </motion.div>
             )}
 
             {step > 0 && step <= QUESTIONS.length && (
               <motion.div key={`s${step}`} initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}}>
-                <span className="text-primary font-bold text-sm mb-2 block">Step {step} of {QUESTIONS.length + 1}</span>
+                <span className="text-primary font-bold text-sm mb-2 block">{t('incidentAssistant.step')} {step} {t('incidentAssistant.of')} {QUESTIONS.length + 1}</span>
                 <h2 className="font-headline text-headline-sm mb-6">{QUESTIONS[step-1].text}</h2>
                 
                 {QUESTIONS[step-1].type === 'text' ? (
@@ -362,31 +357,31 @@ const IncidentAssistant = () => {
                 )}
                 
                 <div className="flex justify-between mt-8">
-                  <button onClick={() => setStep(step - 1)} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">Back</button>
-                  <button onClick={handleNext} className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold btn-tactile">Next Step</button>
+                  <button onClick={() => setStep(step - 1)} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">{t('incidentAssistant.back')}</button>
+                  <button onClick={handleNext} className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold btn-tactile">{t('incidentAssistant.nextStep')}</button>
                 </div>
               </motion.div>
             )}
 
             {step === QUESTIONS.length + 1 && (
               <motion.div key="supload" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}}>
-                <span className="text-primary font-bold text-sm mb-2 block">Final Step</span>
-                <h2 className="font-headline text-headline-sm mb-4">Any Evidence? (Optional)</h2>
-                <p className="font-body text-on-surface-variant mb-6">Upload screenshots of the messages, profile, or game. This helps provide better context (simulated for now).</p>
+                <span className="text-primary font-bold text-sm mb-2 block">{t('incidentAssistant.finalStep')}</span>
+                <h2 className="font-headline text-headline-sm mb-4">{t('incidentAssistant.anyEvidence')}</h2>
+                <p className="font-body text-on-surface-variant mb-6">{t('incidentAssistant.anyEvidenceDesc')}</p>
                 
                 <div className="border-2 border-dashed border-outline-variant rounded-2xl p-10 flex flex-col items-center justify-center bg-surface-container-lowest">
                   <span className="material-symbols-outlined text-4xl text-primary mb-2">cloud_upload</span>
-                  <p className="font-bold text-on-surface">Click to upload screenshots</p>
-                  <p className="text-sm text-on-surface-variant mt-1">PNG, JPG up to 5MB</p>
+                  <p className="font-bold text-on-surface">{t('incidentAssistant.clickToUpload')}</p>
+                  <p className="text-sm text-on-surface-variant mt-1">{t('incidentAssistant.uploadLimits')}</p>
                   <button onClick={handleFakeUpload} disabled={uploading} className="mt-6 bg-secondary text-white px-6 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2">
-                    {uploading ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'Simulate Upload'}
+                    {uploading ? <span className="material-symbols-outlined animate-spin">refresh</span> : t('incidentAssistant.simulateUpload')}
                   </button>
                 </div>
 
                 <div className="flex justify-between mt-8">
-                  <button onClick={() => setStep(step - 1)} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">Back</button>
+                  <button onClick={() => setStep(step - 1)} className="px-6 py-3 rounded-full font-bold text-on-surface-variant hover:bg-surface-container">{t('incidentAssistant.back')}</button>
                   <button onClick={handleNext} className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold btn-tactile flex items-center gap-2">
-                     Skip & Generate Report <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                     {t('incidentAssistant.skipAndGenerate')} <span className="material-symbols-outlined text-sm">auto_awesome</span>
                   </button>
                 </div>
               </motion.div>
@@ -395,8 +390,8 @@ const IncidentAssistant = () => {
             {step === 99 && (
                <motion.div key="sprocessing" initial={{opacity:0}} animate={{opacity:1}} className="text-center py-12">
                  <div className="w-20 h-20 border-4 border-error border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                 <h2 className="font-headline text-headline-sm text-error animate-pulse">AI is compiling report...</h2>
-                 <p className="font-body text-on-surface-variant mt-2">Analyzing situation and finding emergency resources.</p>
+                 <h2 className="font-headline text-headline-sm text-error animate-pulse">{t('incidentAssistant.aiIsCompiling')}</h2>
+                 <p className="font-body text-on-surface-variant mt-2">{t('incidentAssistant.analyzingSituation')}</p>
                </motion.div>
             )}
 

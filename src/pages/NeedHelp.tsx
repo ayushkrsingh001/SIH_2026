@@ -5,6 +5,7 @@ import { groqService } from '../services/groqService';
 import { MASCOT_SMALL_URL } from '../constants';
 import toast from 'react-hot-toast';
 import type { HelpService } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORIES = [
   { id: 'unsafe', label: 'I Feel Unsafe', icon: 'shield_locked', color: 'text-error', bgColor: 'bg-error-container' },
@@ -49,6 +50,7 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 const NeedHelp = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORIES[0] | null>(null);
   
@@ -305,15 +307,15 @@ const NeedHelp = () => {
       className="max-w-4xl mx-auto"
     >
       <div className="text-center mb-8">
-        <h1 className="font-headline text-display-sm md:text-display-md text-on-surface mb-2">Need Help?</h1>
-        <p className="font-body text-body-lg text-on-surface-variant">You are not alone. Find trusted help and support near you.</p>
+        <h1 className="font-headline text-display-sm md:text-display-md text-on-surface mb-2">{t('needHelp.needHelpHeader')}</h1>
+        <p className="font-body text-body-lg text-on-surface-variant">{t('needHelp.needHelpDesc')}</p>
       </div>
 
       {selectedCategory?.isEmergency ? (
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-error-container border-2 border-error rounded-3xl p-6 md:p-8 mb-8 text-center">
           <span className="material-symbols-outlined text-[64px] text-error mb-4">warning</span>
-          <h2 className="font-headline text-headline-md text-on-error-container mb-2">YOU MAY BE IN DANGER</h2>
-          <p className="font-body text-body-lg text-on-error-container mb-6">If you are in immediate danger, contact the appropriate emergency service.</p>
+          <h2 className="font-headline text-headline-md text-on-error-container mb-2">{t('needHelp.youMayBeInDanger')}</h2>
+          <p className="font-body text-body-lg text-on-error-container mb-6">{t('needHelp.inDangerDesc')}</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {EMERGENCY_CONTACTS.map(contact => (
@@ -326,13 +328,13 @@ const NeedHelp = () => {
                   </div>
                 </div>
                 <div className="bg-error text-on-error px-4 py-2 rounded-full font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">call</span> Call Now
+                  <span className="material-symbols-outlined text-sm">call</span> {t('needHelp.callNow')}
                 </div>
               </a>
             ))}
           </div>
           <button onClick={() => setSelectedCategory(null)} className="mt-8 text-on-error-container underline font-body">
-            Go Back
+            {t('needHelp.goBack')}
           </button>
         </motion.div>
       ) : (
@@ -351,7 +353,7 @@ const NeedHelp = () => {
                 <span className={`material-symbols-outlined text-[28px] ${cat.isEmergency ? 'text-white' : cat.color}`}>{cat.icon}</span>
               </div>
               <span className={`font-headline text-title-sm text-center ${cat.isEmergency ? 'text-white font-bold' : 'text-on-surface'}`}>
-                {cat.label}
+                {t(`needHelp.categories.${cat.id}`)}
               </span>
             </button>
           ))}
@@ -365,15 +367,15 @@ const NeedHelp = () => {
             <div className="flex-grow">
               <h3 className="font-headline text-title-md text-primary flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-[20px]">smart_toy</span>
-                Understand My Situation
+                {t('needHelp.understandMySituation')}
               </h3>
               <p className="font-body text-body-md text-on-surface-variant mb-4">
-                Not sure what category to pick? Describe your problem in simple words, and I'll help you figure it out.
+                {t('needHelp.notSureCategory')}
               </p>
               <textarea
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
-                placeholder="E.g. My teacher is threatening to remove me from school..."
+                placeholder={t('needHelp.aiInputPlaceholder')}
                 className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-3 font-body text-body-md resize-none h-24 mb-3 focus:outline-none focus:border-primary"
               />
               <button
@@ -382,7 +384,7 @@ const NeedHelp = () => {
                 className="bg-secondary-container text-on-secondary-container font-headline text-label-lg px-6 py-2 rounded-full flex items-center gap-2 hover:bg-secondary/20 transition-colors disabled:opacity-50"
               >
                 {aiLoading ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">magic_button</span>}
-                Analyze Situation
+                {t('needHelp.analyzeSituation')}
               </button>
               
               {aiResponse && (
@@ -407,9 +409,9 @@ const NeedHelp = () => {
       <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto mb-6">
         <span className="material-symbols-outlined text-primary text-[40px]">location_on</span>
       </div>
-      <h2 className="font-headline text-headline-sm text-on-surface mb-4">Find Help Near You</h2>
+      <h2 className="font-headline text-headline-sm text-on-surface mb-4">{t('needHelp.findHelpNearYou')}</h2>
       <p className="font-body text-body-lg text-on-surface-variant mb-8">
-        Allow location access so we can find trusted support services near your current location. We do not track you permanently.
+        {t('needHelp.allowLocationDesc')}
       </p>
 
       {!showManual ? (
@@ -420,37 +422,37 @@ const NeedHelp = () => {
             className="w-full bg-primary text-on-primary font-headline text-title-md py-4 rounded-xl flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-70"
           >
             {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">my_location</span>}
-            Allow Location
+            {t('needHelp.allowLocation')}
           </button>
           <button
             onClick={() => setShowManual(true)}
             className="w-full text-primary font-headline text-title-md py-4 rounded-xl hover:bg-primary/5 transition-colors"
           >
-            Choose Location Manually
+            {t('needHelp.chooseLocationManually')}
           </button>
         </div>
       ) : (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant text-left">
-          <p className="font-body text-body-md text-on-surface-variant mb-4">That's okay. You can choose your location manually.</p>
+          <p className="font-body text-body-md text-on-surface-variant mb-4">{t('needHelp.manualLocationDesc')}</p>
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block font-body text-label-md text-on-surface-variant mb-1">State</label>
+              <label className="block font-body text-label-md text-on-surface-variant mb-1">{t('needHelp.state')}</label>
               <select
                 value={manualState}
                 onChange={(e) => setManualState(e.target.value)}
                 className="w-full bg-surface-container-low border-none rounded-xl p-3 font-body text-body-md focus:ring-2 focus:ring-primary focus:outline-none"
               >
-                <option value="">Select State</option>
+                <option value="">{t('needHelp.selectState')}</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block font-body text-label-md text-on-surface-variant mb-1">City/Area (Optional)</label>
+              <label className="block font-body text-label-md text-on-surface-variant mb-1">{t('needHelp.cityAreaOptional')}</label>
               <input
                 type="text"
                 value={manualCity}
                 onChange={(e) => setManualCity(e.target.value)}
-                placeholder="e.g. Ahmedabad"
+                placeholder={t('needHelp.cityAreaPlaceholder')}
                 className="w-full bg-surface-container-low border-none rounded-xl p-3 font-body text-body-md focus:ring-2 focus:ring-primary focus:outline-none"
               />
             </div>
@@ -461,13 +463,13 @@ const NeedHelp = () => {
             className="w-full bg-primary text-on-primary font-headline text-title-md py-3 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">search</span>}
-            Find Services
+            {t('needHelp.findServices')}
           </button>
         </motion.div>
       )}
       
       <button onClick={() => setStep(1)} className="mt-8 text-on-surface-variant flex items-center gap-1 mx-auto hover:text-primary">
-        <span className="material-symbols-outlined text-sm">arrow_back</span> Back
+        <span className="material-symbols-outlined text-sm">arrow_back</span> {t('needHelp.back')}
       </button>
     </motion.div>
   );
@@ -483,25 +485,25 @@ const NeedHelp = () => {
         <div>
           <h2 className="font-headline text-headline-sm text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">location_on</span>
-            Help Near You
+            {t('needHelp.helpNearYou')}
           </h2>
           <p className="font-body text-body-md text-on-surface-variant mt-1">
-            Showing trusted support services near <span className="font-bold text-on-surface">{locationName}</span>
+            {t('needHelp.showingServicesNear')} <span className="font-bold text-on-surface">{locationName}</span>
           </p>
         </div>
         <button onClick={() => setStep(2)} className="text-primary hover:bg-primary/10 p-2 rounded-full transition-colors flex items-center gap-1 font-headline text-label-md">
-          <span className="material-symbols-outlined text-sm">edit_location</span> Change
+          <span className="material-symbols-outlined text-sm">edit_location</span> {t('needHelp.change')}
         </button>
       </div>
 
       {services.length === 0 ? (
         <div className="bg-surface-container-lowest rounded-2xl p-8 text-center border border-outline-variant border-dashed">
           <span className="material-symbols-outlined text-[48px] text-on-surface-variant mb-4">search_off</span>
-          <h3 className="font-headline text-title-lg text-on-surface mb-2">No services found exactly here</h3>
-          <p className="font-body text-body-md text-on-surface-variant mb-6">We couldn't find specific verified services in your exact area for this category. Try searching all categories or contacting a national helpline.</p>
+          <h3 className="font-headline text-title-lg text-on-surface mb-2">{t('needHelp.noServicesFound')}</h3>
+          <p className="font-body text-body-md text-on-surface-variant mb-6">{t('needHelp.noServicesFoundDesc')}</p>
           <div className="flex gap-4 justify-center">
-             <button onClick={() => fetchNearbyServices(lat, lng, manualState || (locationName.split(', ')[1] || locationName), 'all')} className="bg-primary text-on-primary px-6 py-2 rounded-full font-headline text-label-lg hover:bg-primary/90">Search All Categories</button>
-             <button onClick={() => { setSelectedCategory(CATEGORIES.find(c => c.id === 'emergency') || null); setStep(1); }} className="bg-error text-on-error px-6 py-2 rounded-full font-headline text-label-lg hover:bg-error/90">Show Emergency Contacts</button>
+             <button onClick={() => fetchNearbyServices(lat, lng, manualState || (locationName.split(', ')[1] || locationName), 'all')} className="bg-primary text-on-primary px-6 py-2 rounded-full font-headline text-label-lg hover:bg-primary/90">{t('needHelp.searchAllCategories')}</button>
+             <button onClick={() => { setSelectedCategory(CATEGORIES.find(c => c.id === 'emergency') || null); setStep(1); }} className="bg-error text-on-error px-6 py-2 rounded-full font-headline text-label-lg hover:bg-error/90">{t('needHelp.showEmergencyContacts')}</button>
           </div>
         </div>
       ) : (
@@ -513,12 +515,12 @@ const NeedHelp = () => {
                   <h3 className="font-headline text-title-lg text-on-surface">{service.organizationName}</h3>
                   {service.verificationStatus === 'Official' && (
                     <span className="bg-secondary text-on-secondary text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1 uppercase tracking-wide">
-                      <span className="material-symbols-outlined text-[12px]">verified</span> Official
+                      <span className="material-symbols-outlined text-[12px]">verified</span> {t('needHelp.official')}
                     </span>
                   )}
                   {service.verificationStatus === 'Verified' && (
                     <span className="bg-tertiary-container text-on-tertiary-container text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1 uppercase tracking-wide">
-                      <span className="material-symbols-outlined text-[12px]">check_circle</span> Verified
+                      <span className="material-symbols-outlined text-[12px]">check_circle</span> {t('needHelp.verified')}
                     </span>
                   )}
                 </div>
@@ -536,7 +538,7 @@ const NeedHelp = () => {
                 {service.distance !== undefined && (
                   <p className="font-body text-label-sm text-secondary flex items-center gap-1 mt-2">
                     <span className="material-symbols-outlined text-[16px]">routing</span>
-                    {service.distance.toFixed(1)} km away
+                    {t('needHelp.kmAway', { distance: service.distance.toFixed(1) })}
                   </p>
                 )}
               </div>
@@ -547,7 +549,7 @@ const NeedHelp = () => {
                   className="flex-1 md:flex-none bg-primary text-on-primary px-4 py-2.5 rounded-xl font-headline text-label-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                 >
                   <span className="material-symbols-outlined text-[20px]">call</span>
-                  Call
+                  {t('needHelp.call')}
                 </a>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${service.latitude},${service.longitude}`}
@@ -556,7 +558,7 @@ const NeedHelp = () => {
                   className="flex-1 md:flex-none bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl font-headline text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors"
                 >
                   <span className="material-symbols-outlined text-[20px]">directions</span>
-                  Directions
+                  {t('needHelp.directions')}
                 </a>
               </div>
             </div>
@@ -565,7 +567,7 @@ const NeedHelp = () => {
       )}
       
       <div className="mt-8 text-center">
-         <button onClick={() => setStep(1)} className="text-on-surface-variant font-body hover:text-primary underline">Back to Categories</button>
+         <button onClick={() => setStep(1)} className="text-on-surface-variant font-body hover:text-primary underline">{t('needHelp.backToCategories')}</button>
       </div>
     </motion.div>
   );

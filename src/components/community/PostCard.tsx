@@ -4,8 +4,7 @@ import type { ParentPost } from '../../types';
 import { togglePostLike, checkIsLiked } from '../../firebase/firestore';
 import { toggleBookmark, checkBookmarked } from '../../firebase/communityFirestore';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCategoryById, COMMUNITY_CATEGORIES } from '../../constants';
-import { VerifiedBadge } from './VerifiedBadge';
+import { COMMUNITY_CATEGORIES } from '../../constants';
 import { InlineFeedQuiz } from './InlineFeedQuiz';
 import toast from 'react-hot-toast';
 

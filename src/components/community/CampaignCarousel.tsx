@@ -15,7 +15,6 @@ export const CampaignCarousel = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [participation, setParticipation] = useState<CampaignParticipation | null>(null);
   const [joining, setJoining] = useState(false);
-  const [currentQuizIdx, setCurrentQuizIdx] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [showXP, setShowXP] = useState(false);
@@ -52,7 +51,6 @@ export const CampaignCarousel = () => {
 
   const handleOpenDetails = async (campaign: Campaign) => {
     setSelectedCampaign(campaign);
-    setCurrentQuizIdx(0);
     setQuizAnswers({});
     setQuizSubmitted(false);
     if (user) await loadParticipation(campaign.id!);

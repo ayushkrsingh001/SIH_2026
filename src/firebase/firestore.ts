@@ -20,11 +20,9 @@ import {
 import { db } from './config';
 import type {
   Parent, Child, Module, Scene, Progress, Badge,
-  SupportRequest, AvatarOption,
+  SupportRequest,
   ParentPost,
   PostComment,
-  PostLike,
-  PostBookmark,
   PostReport,
   Notification as AppNotification,
   SafetyAssessment,

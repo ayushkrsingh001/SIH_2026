@@ -10,8 +10,10 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { staggerContainer, staggerItem } from '../animations/variants';
 import { PageSkeleton } from '../components/ui/SkeletonLoader';
 import type { Progress, Module, Badge } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const ChildProgress = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild, setActiveChild } = useChild();
   const { childId } = useParams();
@@ -67,8 +69,8 @@ const ChildProgress = () => {
           </div>
 
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="font-headline text-headline-md text-on-surface">{activeChild?.displayName}'s Progress</h1>
-            <p className="font-body text-body-md text-primary font-semibold mt-1">Level {levelInfo.level} {levelInfo.title}</p>
+            <h1 className="font-headline text-headline-md text-on-surface">{activeChild?.displayName}{t('childProgress.progress')}</h1>
+            <p className="font-body text-body-md text-primary font-semibold mt-1">{t('childProgress.level')} {levelInfo.level} {levelInfo.title}</p>
             <div className="mt-3 max-w-xs">
               <ProgressBar value={xpProgress.progress} label={`${activeChild?.xp?.toLocaleString()} XP`} showLabel />
             </div>
@@ -77,11 +79,11 @@ const ChildProgress = () => {
           <div className="flex gap-4 text-center">
             <div className="bg-surface-container-low rounded-[16px] p-4 min-w-[80px]">
               <p className="font-headline text-title-lg text-secondary">{completedModules.length}</p>
-              <p className="font-body text-caption text-on-surface-variant">Quests</p>
+              <p className="font-body text-caption text-on-surface-variant">{t('childProgress.quests')}</p>
             </div>
             <div className="bg-surface-container-low rounded-[16px] p-4 min-w-[80px]">
               <p className="font-headline text-title-lg text-tertiary">{earnedBadges.length}</p>
-              <p className="font-body text-caption text-on-surface-variant">Badges</p>
+              <p className="font-body text-caption text-on-surface-variant">{t('childProgress.badges')}</p>
             </div>
           </div>
         </div>
@@ -96,7 +98,7 @@ const ChildProgress = () => {
       >
         <h2 className="font-headline text-title-lg text-on-surface mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-tertiary filled">workspace_premium</span>
-          Badges Earned
+          {t('childProgress.badgesEarned')}
         </h2>
 
         {earnedBadges.length > 0 ? (
@@ -132,7 +134,7 @@ const ChildProgress = () => {
         ) : (
           <div className="text-center py-8">
             <span className="material-symbols-outlined text-4xl text-surface-dim mb-2">military_tech</span>
-            <p className="font-body text-body-md text-on-surface-variant">Complete quests to earn badges!</p>
+            <p className="font-body text-body-md text-on-surface-variant">{t('childProgress.completeQuestsForBadges')}</p>
           </div>
         )}
       </motion.div>
@@ -146,7 +148,7 @@ const ChildProgress = () => {
       >
         <h2 className="font-headline text-title-lg text-on-surface mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-secondary filled">menu_book</span>
-          Quest History
+          {t('childProgress.questHistory')}
         </h2>
 
         {completedModules.length > 0 ? (
@@ -161,7 +163,7 @@ const ChildProgress = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-headline text-body-md text-on-surface font-semibold truncate">{mod.title}</h4>
-                    <p className="font-body text-caption text-on-surface-variant">Score: {prog.score}% · +{mod.xpReward} XP</p>
+                    <p className="font-body text-caption text-on-surface-variant">{t('childProgress.score')}: {prog.score}% · +{mod.xpReward} XP</p>
                   </div>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -181,7 +183,7 @@ const ChildProgress = () => {
         ) : (
           <div className="text-center py-8">
             <span className="material-symbols-outlined text-4xl text-surface-dim mb-2">explore</span>
-            <p className="font-body text-body-md text-on-surface-variant">No quests completed yet. Start exploring!</p>
+            <p className="font-body text-body-md text-on-surface-variant">{t('childProgress.noQuestsCompleted')}</p>
           </div>
         )}
       </motion.div>

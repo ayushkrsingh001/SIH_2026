@@ -37,6 +37,8 @@ const IncidentAssistant = lazy(() => import('./pages/IncidentAssistant'));
 const DailyQuizPage = lazy(() => import('./pages/DailyQuizPage'));
 const AISafetyTwinDashboard = lazy(() => import('./pages/Parent/AISafetyTwinDashboard'));
 const ChildChatBot = lazy(() => import('./pages/ChildChatBot'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -121,6 +123,10 @@ const AnimatedRoutes = () => {
           <Route path="feedback" element={<FeedbackTable />} />
           <Route path="help-services" element={<HelpServicesManager />} />
         </Route>
+
+        {/* Legal Routes */}
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

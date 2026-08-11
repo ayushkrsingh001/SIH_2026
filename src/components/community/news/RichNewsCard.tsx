@@ -4,7 +4,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { NewsQuizSection } from './NewsQuizSection';
 import { likeNews, bookmarkNews, addViewToNews } from '../../../firebase/communityFirestore';
 import type { LegalNewsItem } from '../../../types';
-import { getCategoryById } from '../../../constants';
 import toast from 'react-hot-toast';
 
 interface RichNewsCardProps {
@@ -97,11 +96,11 @@ export const RichNewsCard = ({ news, isBookmarked, onBookmarkToggle }: RichNewsC
           <div className="flex gap-2">
             <span className="bg-surface-container px-2 py-1 rounded-md text-xs font-body font-semibold text-on-surface flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px]">schedule</span>
-              {news.readTimeMinutes} min read
+              3 min read
             </span>
-            <span className="bg-primary-container/20 text-primary px-2 py-1 rounded-md text-xs font-body font-bold flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">stars</span>
-              +{news.rewardXP} XP
+            <span className="bg-primary-container/50 px-2 py-1 rounded-md text-xs font-body font-bold text-primary flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">bolt</span>
+              +{news.xpReward || 15} XP
             </span>
           </div>
           <p className="font-body text-caption text-on-surface-variant">

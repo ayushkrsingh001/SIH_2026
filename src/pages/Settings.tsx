@@ -8,8 +8,10 @@ import { hashPin } from '../utils';
 import { AVATAR_OPTIONS } from '../constants';
 import toast from 'react-hot-toast';
 import type { Child, Parent } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function Settings() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [parentData, setParentData] = useState<Parent | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
@@ -140,7 +142,7 @@ export default function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
-      <h1 className="font-headline text-headline-lg text-on-surface mb-8">Settings & Profiles</h1>
+      <h1 className="font-headline text-headline-lg text-on-surface mb-8">{t('settings.title')}</h1>
 
       {/* Parent Settings Section */}
       <motion.section 
@@ -152,9 +154,9 @@ export default function Settings() {
           <div>
             <h2 className="font-headline text-headline-sm text-primary flex items-center gap-2">
               <span className="material-symbols-outlined">shield_person</span>
-              Parent Profile
+              {t('settings.parentProfile')}
             </h2>
-            <p className="text-body-md text-on-surface-variant mt-1">Manage your account and master PIN.</p>
+            <p className="text-body-md text-on-surface-variant mt-1">{t('settings.parentProfileDesc')}</p>
           </div>
           {!isEditingParent && (
             <button 
@@ -162,7 +164,7 @@ export default function Settings() {
               className="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-secondary-container/80 transition-colors"
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>
-              Edit Profile
+              {t('settings.editProfile')}
             </button>
           )}
         </div>
@@ -170,7 +172,7 @@ export default function Settings() {
         {isEditingParent ? (
           <form onSubmit={handleParentSave} className="space-y-6 bg-surface-container-low p-6 rounded-[16px]">
             <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Display Name</label>
+              <label className="block text-label-md text-on-surface-variant mb-2">{t('settings.displayName')}</label>
               <input
                 type="text"
                 value={parentName}
@@ -181,12 +183,12 @@ export default function Settings() {
             </div>
             
             <div className="pt-4 border-t border-outline-variant">
-              <h3 className="text-label-lg font-bold mb-4">Change Master PIN</h3>
-              <p className="text-caption text-on-surface-variant mb-4">Leave blank if you do not want to change your PIN.</p>
+              <h3 className="text-label-lg font-bold mb-4">{t('settings.changeMasterPin')}</h3>
+              <p className="text-caption text-on-surface-variant mb-4">{t('settings.leaveBlankToKeepPin')}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-label-md text-on-surface-variant mb-2">New PIN (4 digits)</label>
+                  <label className="block text-label-md text-on-surface-variant mb-2">{t('settings.newPin')}</label>
                   <input
                     type="password"
                     maxLength={4}
@@ -197,7 +199,7 @@ export default function Settings() {
                   />
                 </div>
                 <div>
-                  <label className="block text-label-md text-on-surface-variant mb-2">Confirm New PIN</label>
+                  <label className="block text-label-md text-on-surface-variant mb-2">{t('settings.confirmNewPin')}</label>
                   <input
                     type="password"
                     maxLength={4}
@@ -216,29 +218,29 @@ export default function Settings() {
                 onClick={() => setIsEditingParent(false)}
                 className="px-6 py-2 rounded-full border border-outline-variant text-on-surface-variant font-bold hover:bg-surface-container transition-colors"
               >
-                Cancel
+                {t('settings.cancel')}
               </button>
               <button 
                 type="submit"
                 className="px-6 py-2 rounded-full bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors"
               >
-                Save Changes
+                {t('settings.saveChanges')}
               </button>
             </div>
           </form>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-surface-container-low p-6 rounded-[16px]">
             <div>
-              <p className="text-label-md text-on-surface-variant mb-1">Display Name</p>
+              <p className="text-label-md text-on-surface-variant mb-1">{t('settings.displayName')}</p>
               <p className="text-body-lg font-bold text-on-surface">{parentData?.displayName || user?.displayName}</p>
             </div>
             <div>
-              <p className="text-label-md text-on-surface-variant mb-1">Email</p>
+              <p className="text-label-md text-on-surface-variant mb-1">{t('settings.email')}</p>
               <p className="text-body-lg text-on-surface">{parentData?.email || user?.email}</p>
             </div>
             <div>
-              <p className="text-label-md text-on-surface-variant mb-1">Master PIN</p>
-              <p className="text-body-lg font-mono text-on-surface">{parentData?.pin ? '••••' : 'Not Set'}</p>
+              <p className="text-label-md text-on-surface-variant mb-1">{t('settings.masterPin')}</p>
+              <p className="text-body-lg font-mono text-on-surface">{parentData?.pin ? '••••' : t('settings.notSet')}</p>
             </div>
           </div>
         )}
@@ -255,16 +257,16 @@ export default function Settings() {
           <div>
             <h2 className="font-headline text-headline-sm text-secondary flex items-center gap-2">
               <span className="material-symbols-outlined">child_care</span>
-              Children Profiles
+              {t('settings.childrenProfiles')}
             </h2>
-            <p className="text-body-md text-on-surface-variant mt-1">Manage your kids' accounts, avatars, and PINs.</p>
+            <p className="text-body-md text-on-surface-variant mt-1">{t('settings.childrenProfilesDesc')}</p>
           </div>
         </div>
 
         {children.length === 0 ? (
           <div className="text-center py-8 bg-surface-container-low rounded-[16px]">
             <span className="material-symbols-outlined text-[48px] text-outline mb-2">sentiment_dissatisfied</span>
-            <p className="text-body-lg text-on-surface-variant">No children added yet.</p>
+            <p className="text-body-lg text-on-surface-variant">{t('settings.noChildren')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -279,7 +281,7 @@ export default function Settings() {
                     </div>
                     <div>
                       <h3 className="font-bold text-title-md">{child.displayName}</h3>
-                      <p className="text-label-sm text-on-surface-variant">Level {child.level} • {child.ageGroup} years</p>
+                      <p className="text-label-sm text-on-surface-variant">{t('settings.level')} {child.level} • {child.ageGroup} {t('settings.years')}</p>
                     </div>
                   </div>
                   
@@ -305,7 +307,7 @@ export default function Settings() {
                       <form onSubmit={handleChildSave} className="p-6 space-y-6">
                         {/* Avatar Selection */}
                         <div>
-                          <label className="block text-label-md text-on-surface-variant mb-4">Update Avatar</label>
+                          <label className="block text-label-md text-on-surface-variant mb-4">{t('settings.updateAvatar')}</label>
                           <div className="flex flex-wrap gap-3">
                             {AVATAR_OPTIONS.map(avatar => (
                               <button
@@ -324,7 +326,7 @@ export default function Settings() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <label className="block text-label-md text-on-surface-variant mb-2">Explorer Name</label>
+                            <label className="block text-label-md text-on-surface-variant mb-2">{t('settings.explorerName')}</label>
                             <input
                               type="text"
                               value={childName}
@@ -334,7 +336,7 @@ export default function Settings() {
                             />
                           </div>
                           <div>
-                            <label className="block text-label-md text-on-surface-variant mb-2">Age Group</label>
+                            <label className="block text-label-md text-on-surface-variant mb-2">{t('settings.ageGroup')}</label>
                             <div className="flex gap-2 h-[50px]">
                               {(['8-11', '12-16'] as const).map(age => (
                                 <button
@@ -345,7 +347,7 @@ export default function Settings() {
                                     childAgeGroup === age ? 'bg-primary-container border-primary text-on-primary-container font-bold' : 'bg-surface-container-low border-outline text-on-surface-variant'
                                   }`}
                                 >
-                                  {age} years
+                                  {age} {t('settings.years')}
                                 </button>
                               ))}
                             </div>
@@ -353,8 +355,8 @@ export default function Settings() {
                         </div>
 
                         <div className="pt-4 border-t border-outline-variant">
-                          <h4 className="text-label-lg font-bold mb-4">Change Child PIN</h4>
-                          <p className="text-caption text-on-surface-variant mb-4">Leave blank to keep their current PIN.</p>
+                          <h4 className="text-label-lg font-bold mb-4">{t('settings.changeChildPin')}</h4>
+                          <p className="text-caption text-on-surface-variant mb-4">{t('settings.childPinDesc')}</p>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -364,7 +366,7 @@ export default function Settings() {
                                 value={childPin}
                                 onChange={(e) => setChildPin(e.target.value.replace(/\D/g, ''))}
                                 className="w-full p-3 text-center tracking-widest rounded-lg border border-outline bg-surface-container-low focus:border-primary outline-none"
-                                placeholder="New PIN (••••)"
+                                placeholder={t('settings.childNewPin')}
                               />
                             </div>
                             <div>
@@ -374,7 +376,7 @@ export default function Settings() {
                                 value={childConfirmPin}
                                 onChange={(e) => setChildConfirmPin(e.target.value.replace(/\D/g, ''))}
                                 className="w-full p-3 text-center tracking-widest rounded-lg border border-outline bg-surface-container-low focus:border-primary outline-none"
-                                placeholder="Confirm New PIN (••••)"
+                                placeholder={t('settings.childConfirmNewPin')}
                               />
                             </div>
                           </div>
@@ -386,13 +388,13 @@ export default function Settings() {
                             onClick={cancelEditChild}
                             className="px-6 py-2 rounded-full border border-outline-variant text-on-surface-variant font-bold hover:bg-surface-container transition-colors"
                           >
-                            Cancel
+                            {t('settings.cancel')}
                           </button>
                           <button 
                             type="submit"
                             className="px-6 py-2 rounded-full bg-secondary text-on-secondary font-bold hover:bg-secondary/90 transition-colors"
                           >
-                            Save Child Profile
+                            {t('settings.saveChildProfile')}
                           </button>
                         </div>
                       </form>

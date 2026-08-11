@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useChild } from '../contexts/ChildContext';
 import { 
-  getModule, getProgress, getBadges, getChild, getAllChildProgress, updateChild,
+  getProgress, getBadges, getChild, getAllChildProgress, updateChild,
   addLearningEvent, getLearningHistory, getSafetyTwinProfile, saveSafetyTwinProfile
 } from '../firebase/firestore';
 import { groqService } from '../services/groqService';
@@ -15,14 +15,17 @@ import { StarRating } from '../components/ui/StarRating';
 import { addFeedback } from '../firebase/firestore';
 import { celebrationVariants, bounceIn, staggerContainer, staggerItem } from '../animations/variants';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import type { Module, Badge } from '../types';
-import { allLocalModules } from '../data';
+import { useGameData } from '../hooks/useGameData';
 
 const QuestComplete = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeChild, setActiveChild } = useChild();
   const navigate = useNavigate();
   const { childId, moduleId } = useParams();
+  const { modules: allLocalModules } = useGameData();
 
   const [module, setModule] = useState<Module | null>(null);
   const [score, setScore] = useState(0);
@@ -94,10 +97,10 @@ const QuestComplete = () => {
             };
             
             await saveSafetyTwinProfile(newProfile);
-            toast.success("AI Safety Twin updated!");
+            toast.success(t('aiQuestComplete.aiSafetyTwinUpdated'));
           } catch (e: any) {
             console.error("AI Twin Sync Error:", e);
-            toast.error(`AI Safety Twin update failed: ${e.message || e}`);
+            toast.error(t('aiQuestComplete.aiSafetyTwinUpdateFailed', { error: e.message || e }));
           }
         }, 0);
       }
@@ -117,10 +120,10 @@ const QuestComplete = () => {
         comments: feedbackComment,
         screenContext: `module_complete_${moduleId}`,
       });
-      toast.success('Thanks for your feedback!');
+      toast.success(t('questComplete.thanksFeedback'));
       setShowFeedback(false);
     } catch {
-      toast.error('Failed to submit feedback.');
+      toast.error(t('questComplete.failedFeedback'));
     }
   };
 
@@ -168,7 +171,7 @@ const QuestComplete = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        Quest Complete!
+        {t('questComplete.questComplete')}
       </motion.h1>
 
       <motion.p
@@ -177,7 +180,7 @@ const QuestComplete = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        Amazing work on "{module?.title}"!
+        {t('questComplete.amazingWork', { title: module?.title })}
       </motion.p>
 
       {/* Stats Cards */}
@@ -192,7 +195,7 @@ const QuestComplete = () => {
             <span className="material-symbols-outlined text-primary text-xl filled">bolt</span>
           </div>
           <p className="font-headline text-title-lg text-primary">+{xpEarned}</p>
-          <p className="font-body text-caption text-on-surface-variant">XP Earned</p>
+          <p className="font-body text-caption text-on-surface-variant">{t('aiQuestComplete.xpEarned')}</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="bg-surface-container-lowest rounded-[24px] p-4 shadow-card">
@@ -200,7 +203,7 @@ const QuestComplete = () => {
             <span className="material-symbols-outlined text-secondary text-xl filled">target</span>
           </div>
           <p className="font-headline text-title-lg text-secondary">{score}%</p>
-          <p className="font-body text-caption text-on-surface-variant">Score</p>
+          <p className="font-body text-caption text-on-surface-variant">{t('aiQuestComplete.score')}</p>
         </motion.div>
         
         <motion.div variants={staggerItem} className="bg-surface-container-lowest rounded-[24px] p-4 shadow-card relative overflow-hidden">
@@ -214,7 +217,7 @@ const QuestComplete = () => {
             <span className="material-symbols-outlined text-[#FFB703] text-xl filled">monetization_on</span>
           </div>
           <p className="font-headline text-title-lg text-[#FFB703] relative z-10">+{module?.coinReward || 10}</p>
-          <p className="font-body text-caption text-on-surface-variant relative z-10">Coins</p>
+          <p className="font-body text-caption text-on-surface-variant relative z-10">{t('aiQuestComplete.coins')}</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="bg-surface-container-lowest rounded-[24px] p-4 shadow-card">
@@ -236,7 +239,7 @@ const QuestComplete = () => {
         >
           <h3 className="font-headline text-title-lg text-on-surface mb-4 flex items-center justify-center gap-2">
             <span className="material-symbols-outlined text-tertiary filled">workspace_premium</span>
-            New Badge{newBadges.length > 1 ? 's' : ''} Earned!
+            {newBadges.length > 1 ? t('questComplete.newBadgesEarned') : t('questComplete.newBadgeEarned')}
           </h3>
           <div className="flex justify-center gap-4">
             {newBadges.map(badge => (
@@ -262,7 +265,7 @@ const QuestComplete = () => {
           <img src={avatar.imageUrl} alt={activeChild?.displayName} className="w-full h-full object-cover" />
         </div>
         <span className="font-body text-label-md text-on-surface">{activeChild?.displayName}</span>
-        <span className="font-body text-caption text-primary">Level {levelInfo.level}</span>
+        <span className="font-body text-caption text-primary">{t('aiQuestComplete.level')} {levelInfo.level}</span>
       </motion.div>
 
       {/* Actions */}
@@ -273,7 +276,7 @@ const QuestComplete = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          Continue Adventure
+          {t('questComplete.continueAdventure')}
           <span className="material-symbols-outlined">arrow_forward</span>
         </motion.button>
 
@@ -282,7 +285,7 @@ const QuestComplete = () => {
           className="w-full h-12 text-primary font-body text-label-md hover:bg-primary-fixed/10 rounded-full transition-colors flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined text-sm">rate_review</span>
-          Rate this Quest
+          {t('questComplete.rateQuest')}
         </button>
       </div>
 
@@ -299,26 +302,26 @@ const QuestComplete = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
           >
-            <h3 className="font-headline text-title-lg text-on-surface mb-4">How was this quest?</h3>
+            <h3 className="font-headline text-title-lg text-on-surface mb-4">{t('questComplete.howWasQuest')}</h3>
             <div className="flex justify-center mb-4">
               <StarRating value={feedbackRating} onChange={setFeedbackRating} size="lg" />
             </div>
             <textarea
               value={feedbackComment}
               onChange={e => setFeedbackComment(e.target.value)}
-              placeholder="Tell us what you think... (optional)"
+              placeholder={t('questComplete.feedbackPlaceholder')}
               className="w-full p-4 rounded-lg border-2 border-surface-dim tactile-input font-body text-body-md bg-surface-bright resize-none h-24"
             />
             <div className="flex gap-3 mt-4">
               <button onClick={() => setShowFeedback(false)} className="flex-1 h-12 border-2 border-outline-variant rounded-full font-body text-label-md text-on-surface hover:bg-surface-container-high transition-colors">
-                Skip
+                {t('questComplete.skip')}
               </button>
               <button
                 onClick={handleSubmitFeedback}
                 disabled={feedbackRating === 0}
                 className="flex-1 h-12 bg-primary-container text-on-primary-container rounded-full font-body text-label-md btn-tactile-primary disabled:opacity-50"
               >
-                Submit
+                {t('questComplete.submit')}
               </button>
             </div>
           </motion.div>

@@ -6,8 +6,12 @@ import { MASCOT_SMALL_URL } from '../constants';
 import { resolveAvatarUrl } from '../utils/avatar';
 import { calculateLevel } from '../services/xpSystem';
 import AIMentorWidget from '../components/ui/AIMentorWidget';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
+import { logOut } from '../firebase/auth';
 
 export const ChildLayout = () => {
+  const { t } = useTranslation();
   const { activeChild } = useChild();
   const navigate = useNavigate();
   const { childId } = useParams();
@@ -19,15 +23,15 @@ export const ChildLayout = () => {
   const levelInfo = calculateLevel(activeChild?.xp || 0);
 
   const navItems = [
-    { path: `/play/${childId}/map`, icon: 'map', label: 'Map' },
-    { path: `/play/${childId}/chat`, icon: 'chat', label: 'AI Chat' },
-    { path: `/play/${childId}/progress`, icon: 'emoji_events', label: 'Progress' },
-    { path: `/play/${childId}/store`, icon: 'storefront', label: 'Store' },
-    { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: 'Daily Quiz' },
-    { path: `/play/${childId}/multiplayer`, icon: 'swords', label: 'Battle' },
-    { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: 'Ranks' },
-    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: 'Report' },
-    { path: `/play/${childId}/need-help`, icon: 'sos', label: 'Help' },
+    { path: `/play/${childId}/map`, icon: 'map', label: t('layouts.child.map') },
+    { path: `/play/${childId}/chat`, icon: 'chat', label: t('layouts.child.aiChat') },
+    { path: `/play/${childId}/progress`, icon: 'emoji_events', label: t('layouts.child.progress') },
+    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: t('layouts.child.report') },
+    { path: `/play/${childId}/need-help`, icon: 'sos', label: t('layouts.child.help') },
+    { path: `/play/${childId}/store`, icon: 'storefront', label: t('layouts.child.store') },
+    { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: t('layouts.child.dailyQuiz') },
+    { path: `/play/${childId}/multiplayer`, icon: 'swords', label: t('layouts.child.battle') },
+    { path: `/play/${childId}/leaderboard`, icon: 'leaderboard', label: t('layouts.child.ranks') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -81,7 +85,7 @@ export const ChildLayout = () => {
                     : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
-                <span className="font-body text-label-lg">More</span>
+                <span className="font-body text-label-lg">{t('layouts.child.more')}</span>
                 <span className="material-symbols-outlined text-[20px]">{isDesktopMenuOpen ? 'expand_less' : 'expand_more'}</span>
               </button>
               
@@ -123,6 +127,8 @@ export const ChildLayout = () => {
 
           {/* Actions Section */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            
             {/* Child Avatar */}
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container bg-cream">
@@ -137,6 +143,18 @@ export const ChildLayout = () => {
             <Link to="/play" className="text-on-surface-variant hover:text-primary transition-colors" aria-label="Switch player">
               <span className="material-symbols-outlined">swap_horiz</span>
             </Link>
+            
+            <button 
+              onClick={async () => {
+                await logOut();
+                navigate('/');
+              }} 
+              className="text-on-surface-variant hover:text-error transition-colors" 
+              aria-label="Logout"
+              title="Logout"
+            >
+              <span className="material-symbols-outlined">logout</span>
+            </button>
           </div>
         </div>
       </header>
@@ -185,7 +203,7 @@ export const ChildLayout = () => {
           }`}
         >
           <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'more_horiz'}</span>
-          <span className="font-body text-[10px] sm:text-xs mt-1 text-center leading-tight">More</span>
+          <span className="font-body text-[10px] sm:text-xs mt-1 text-center leading-tight">{t('layouts.child.more')}</span>
         </button>
       </nav>
 

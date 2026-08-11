@@ -203,8 +203,6 @@ export const ScamAlertSection = () => {
                             <div className="space-y-3">
                               {alert.quizQuestions.map((q, qIdx) => {
                                 const userAns = alertAnswers[qIdx];
-                                const isCorrect = isQuizDone && userAns === q.correctAnswer;
-                                const isWrong = isQuizDone && userAns && userAns !== q.correctAnswer;
 
                                 return (
                                   <div key={qIdx}>

@@ -14,7 +14,6 @@ export const InlineFeedQuiz = ({ postId }: InlineFeedQuizProps) => {
   const [quiz, setQuiz] = useState<FeedQuiz | null>(null);
   const [attempt, setAttempt] = useState<FeedQuizAttempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [currentQ, setCurrentQ] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [showXP, setShowXP] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -88,8 +87,6 @@ export const InlineFeedQuiz = ({ postId }: InlineFeedQuizProps) => {
         <div className="space-y-3">
           {quiz.questions.map((q, qIdx) => {
             const userAnswer = answers[q.id];
-            const isCorrect = submitted && userAnswer === q.correctAnswer;
-            const isWrong = submitted && userAnswer && userAnswer !== q.correctAnswer;
 
             return (
               <motion.div
