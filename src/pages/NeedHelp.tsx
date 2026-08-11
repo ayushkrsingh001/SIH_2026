@@ -271,7 +271,6 @@ const NeedHelp = () => {
       setStep(3);
     } catch (error) {
       console.error('Error fetching services:', error);
-      toast.error('Failed to load dynamic services. Using fallback.');
       
       // Ultimate Fallback to Firestore if Overpass API completely fails
       try {
