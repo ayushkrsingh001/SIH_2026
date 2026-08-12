@@ -933,3 +933,62 @@ export interface HelpService {
   lastVerifiedAt: Timestamp | null;
   createdAt: Timestamp;
 }
+
+// ========== RIGHTS DETECTIVE TYPES ==========
+
+export interface DetectiveClue {
+  id: string;
+  label: string;
+  description: string;
+  icon: string;
+  isRelevant: boolean;
+  isHidden?: boolean;
+}
+
+export interface DetectiveAction {
+  id: string;
+  label: string;
+  isSafe: boolean;
+  consequenceFeedback: string;
+}
+
+export interface DetectivePuzzle {
+  id: string;
+  type: 'sort' | 'sequence' | 'match';
+  question: string;
+  actions?: DetectiveAction[];
+  correctSequenceIds?: string[];
+  matchPairs?: { left: string; right: string }[];
+  hint: string;
+}
+
+export interface DetectiveCase {
+  id: string;
+  title: string;
+  category: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Boss';
+  description: string;
+  storyScenes: { text: string; imageUrl?: string }[];
+  investigationText: string;
+  clues: DetectiveClue[];
+  puzzles: DetectivePuzzle[];
+  learningPoint: string;
+  xpReward: number;
+  badgeId?: string;
+  nextCaseId: string | null;
+}
+
+export interface DetectiveProgress {
+  id?: string;
+  childId: string;
+  caseId: string;
+  status: 'locked' | 'available' | 'in_progress' | 'completed';
+  startedAt: Timestamp | null;
+  completedAt: Timestamp | null;
+  cluesFound: string[];
+  puzzlesCompleted: string[];
+  attempts: number;
+  hintsUsed: number;
+  score: number;
+  bestScore: number;
+}

@@ -710,3 +710,22 @@ export const deleteHelpService = async (serviceId: string): Promise<void> => {
   await deleteDoc(doc(db, 'help_services', serviceId));
 };
 
+// ========== RIGHTS DETECTIVE ==========
+import type { DetectiveProgress } from '../types';
+
+export const getDetectiveProgress = async (parentId: string, childId: string, caseId: string): Promise<DetectiveProgress | null> => {
+  const snap = await getDoc(doc(db, 'parents', parentId, 'children', childId, 'detectiveProgress', caseId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } as DetectiveProgress : null;
+};
+
+export const getAllDetectiveProgress = async (parentId: string, childId: string): Promise<DetectiveProgress[]> => {
+  const snapshot = await getDocs(
+    collection(db, 'parents', parentId, 'children', childId, 'detectiveProgress')
+  );
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as DetectiveProgress));
+};
+
+export const saveDetectiveProgress = async (parentId: string, progress: Omit<DetectiveProgress, 'id'>): Promise<void> => {
+  await setDoc(doc(db, 'parents', parentId, 'children', progress.childId, 'detectiveProgress', progress.caseId), progress);
+};
+

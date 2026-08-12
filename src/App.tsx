@@ -40,6 +40,9 @@ const ChildChatBot = lazy(() => import('./pages/ChildChatBot'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const ImageDecisionGame = lazy(() => import('./pages/ImageDecisionGame'));
+const RightsDetectiveHome = lazy(() => import('./pages/RightsDetectiveHome'));
+const RightsDetectiveCase = lazy(() => import('./pages/RightsDetectiveCase'));
+
 
 // Admin pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
@@ -113,6 +116,8 @@ const AnimatedRoutes = () => {
           <Route path="ai-complete/:aiLevelId" element={<AIQuestComplete />} />
           <Route path="chat" element={<ChildChatBot />} />
           <Route path="image-decision" element={<ImageDecisionGame />} />
+          <Route path="detective" element={<RightsDetectiveHome />} />
+          <Route path="detective/:caseId" element={<RightsDetectiveCase />} />
         </Route>
 
         {/* Community is now grouped under Parent Routes above */}
