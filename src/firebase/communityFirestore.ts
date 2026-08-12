@@ -41,6 +41,7 @@ import type {
   PostComment,
   LegalAIChatMessage,
 } from '../types';
+import { imageDecisionRounds, type ImageDecisionRound } from '../data/imageDecisions';
 
 // ========== CAMPAIGNS ==========
 
@@ -796,6 +797,47 @@ export const checkBookmarked = async (
   );
   const snapshot = await getDocs(q);
   return !snapshot.empty;
+};
+
+// ========== IMAGE DECISION ==========
+
+export const subscribeToImageDecisionRounds = (callback: (rounds: ImageDecisionRound[]) => void) => {
+  // Currently defaulting to local data as requested
+  callback(imageDecisionRounds);
+  // Return a no-op unsubscribe function
+  return () => {};
+};
+
+export const getCompletedImageDecisionIds = async (userId: string): Promise<string[]> => {
+  const q = query(
+    collection(db, 'imageDecisionProgress'),
+    where('userId', '==', userId),
+    where('completed', '==', true)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(d => d.data().roundId);
+};
+
+export const markImageDecisionCompleted = async (roundId: string, userId: string, attemptCount: number): Promise<boolean> => {
+  const q = query(
+    collection(db, 'imageDecisionProgress'),
+    where('roundId', '==', roundId),
+    where('userId', '==', userId),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  
+  if (snapshot.empty) {
+    await addDoc(collection(db, 'imageDecisionProgress'), {
+      roundId,
+      userId,
+      attemptCount,
+      completed: true,
+      completedAt: serverTimestamp(),
+    });
+    return true; // First time completed
+  }
+  return false;
 };
 
 export const getUserBookmarks = async (

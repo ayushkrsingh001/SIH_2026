@@ -26,7 +26,7 @@ export const ChildLayout = () => {
     { path: `/play/${childId}/map`, icon: 'map', label: t('layouts.child.map') },
     { path: `/play/${childId}/chat`, icon: 'chat', label: t('layouts.child.aiChat') },
     { path: `/play/${childId}/progress`, icon: 'emoji_events', label: t('layouts.child.progress') },
-    { path: `/play/${childId}/incident-assistant`, icon: 'report', label: t('layouts.child.report') },
+    { path: `/play/${childId}/image-decision`, icon: 'image_search', label: 'Spot Right' },
     { path: `/play/${childId}/need-help`, icon: 'sos', label: t('layouts.child.help') },
     { path: `/play/${childId}/store`, icon: 'storefront', label: t('layouts.child.store') },
     { path: `/play/${childId}/daily-quiz`, icon: 'calendar_month', label: t('layouts.child.dailyQuiz') },

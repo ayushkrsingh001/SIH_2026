@@ -39,8 +39,10 @@ const AISafetyTwinDashboard = lazy(() => import('./pages/Parent/AISafetyTwinDash
 const ChildChatBot = lazy(() => import('./pages/ChildChatBot'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const ImageDecisionGame = lazy(() => import('./pages/ImageDecisionGame'));
 
 // Admin pages
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const ModuleManager = lazy(() => import('./pages/admin/ModuleManager'));
 const ModerationQueue = lazy(() => import('./pages/admin/ModerationQueue'));
@@ -110,11 +112,13 @@ const AnimatedRoutes = () => {
           <Route path="ai-level/:aiLevelId" element={<AILevelPlayer />} />
           <Route path="ai-complete/:aiLevelId" element={<AIQuestComplete />} />
           <Route path="chat" element={<ChildChatBot />} />
+          <Route path="image-decision" element={<ImageDecisionGame />} />
         </Route>
 
         {/* Community is now grouped under Parent Routes above */}
 
         {/* Admin Routes */}
+        <Route path="/admin-login" element={<PublicRoute><AdminLogin /></PublicRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="modules" element={<ModuleManager />} />

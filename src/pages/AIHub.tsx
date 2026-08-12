@@ -288,6 +288,21 @@ const AIHub = () => {
             onClick={() => setShowTopicPicker(true)}
           />
         </motion.div>
+
+        {/* Image Decision Mini-Game */}
+        <motion.div variants={staggerItem}>
+          <AICard
+            icon="image_search"
+            iconColor="text-[#E83E8C]"
+            bgGradient="from-[#E83E8C]/10 to-[#D81B60]/5"
+            title="Spot the Right"
+            description="Look at two images and choose the one that respects child rights."
+            badge="Minigame"
+            badgeColor="bg-secondary"
+            loading={false}
+            onClick={() => navigate(`/play/${childId}/image-decision`)}
+          />
+        </motion.div>
       </motion.div>
 
       {/* Special Events */}

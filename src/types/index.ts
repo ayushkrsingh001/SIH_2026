@@ -554,6 +554,15 @@ export interface MythFactProgress {
   completedAt: Timestamp;
 }
 
+export interface ImageDecisionProgress {
+  id?: string;
+  roundId: string;
+  userId: string;
+  completed: boolean;
+  completedAt: Timestamp;
+  attemptCount: number;
+}
+
 export interface FeedQuiz {
   id?: string;
   postId: string;
